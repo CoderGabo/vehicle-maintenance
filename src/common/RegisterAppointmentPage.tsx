@@ -38,7 +38,7 @@ interface User {
   userId: string;
   username: string;
   token: string;
-  role: string;
+  role: any;
 }
 
 
@@ -122,11 +122,11 @@ export const RegisterAppointmentPage = () => {
   // Asegurándonos de que getAppointmentsToDisplay retorna un array
   const getAppointmentsToDisplay = () => {
     let appointments = [];
-    switch (user?.role) {
-      case "customer":
+    switch (user?.role.name) {
+      case "CUSTOMER":
         appointments = appointmentsByCustomer?.appointmentsByCustomer || [];
         break;
-      case "employee":
+      case "EMPLOYEE":
         appointments = pendingAppointments?.pendingAppointments || [];
         break;
       default:
@@ -168,7 +168,7 @@ export const RegisterAppointmentPage = () => {
 
   return (
     <ViagioLayout>
-      {user?.role === "customer" && (
+      {user?.role.name === "CUSTOMER" && (
         <Box mt={4} paddingLeft={4}>
           <Button variant="contained" color="primary" onClick={handleOpen}>
             Agendar Cita
@@ -220,7 +220,7 @@ export const RegisterAppointmentPage = () => {
                 ))}
               </ul>
               <Typography>Estado: {appointment.status}</Typography>
-              {user?.role === "employee" &&
+              {user?.role.name === "EMPLOYEE" &&
                 appointment.status === "pending" && (
                   <Button
                     variant="contained"
@@ -236,7 +236,7 @@ export const RegisterAppointmentPage = () => {
                     {loading ? "Enviando..." : "Tomar Cita"}
                   </Button>
                 )}
-              {user?.role === "customer" &&
+              {user?.role.name === "CUSTOMER" &&
                 appointment.status === "completed" && (
                   <Button
                     variant="contained"

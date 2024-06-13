@@ -14,7 +14,7 @@ interface User {
   userId: string;
   username: string;
   token: string;
-  role: string;
+  role: any;
 }
 export const SeeMaintenancePage = () => {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export const SeeMaintenancePage = () => {
 
   const getMaintenancesToDisplay = () => {
     let maintenances = [];
-    if (user?.role === 'employee') {
+    if (user?.role.name === 'EMPLOYEE') {
       maintenances = maintenancesNotCompleted?.maintenancesNotCompleted || [];
     } else {
       maintenances = allMaintenances?.maintenances || [];

@@ -17,7 +17,7 @@ interface User {
     userId: string;
     username: string;
     token: string;
-    role: string;
+    role: any;
   }
 
 const drawerWidth = 240;
@@ -52,20 +52,20 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
         const userData: User = JSON.parse(localStorage.getItem("user")|| "{}");
 
         // Definición de permisos basados en el rol del usuario
-        const userPermissions = getPermissions(userData.role);
+        const userPermissions = getPermissions(userData.role.name);
         setPermissions(userPermissions);
     }, []);
 
     const getPermissions = (role: string): string[] => {
         switch (role) {
-          case "customer":
+          case "CUSTOMER":
             return [
                 "Gestion de Vehículos",
                 "Ver Vehículos",
                 "Gestión de Mantenimientos",
                 "Ver Citas de Mantenimiento",
             ];
-          case "employee":
+          case "EMPLOYEE":
             return [
                 "Gestión de Mantenimientos",
                 "Ver Citas de Mantenimiento",
@@ -74,7 +74,7 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
                 "Registrar Servicios",
                 "Ver Servicios"
             ];
-          case "admin":
+          case "ADMINISTRADOR":
             return [
                 "Dashboard",
                 "Gestion de Usuarios",

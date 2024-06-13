@@ -15,14 +15,14 @@ import { useMutation } from "@apollo/client";
 import { LOGIN } from "../../graphql/users/mutations-users";
 import { useNavigate } from "react-router-dom";
 
-const data = {
-  login: {
-    id: "12345",
-    username: "usuario_prueba",
-    token: "mi_token_secreto",
-    role: "admin"
-  }
-};
+// const data = {
+//   login: {
+//     id: "12345",
+//     username: "usuario_prueba",
+//     token: "mi_token_secreto",
+//     role: "admin"
+//   }
+// };
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -53,31 +53,19 @@ export const LoginPage = () => {
         },
       },
     });
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        userId: data.login.id,
-        username: data.login.username,
-        token: data.login.token,
-        role: data.login.role,
-      })
-    );
-
-    navigateToCorrectRoute();
   };
 
   const navigateToCorrectRoute = () => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
   
-    switch (userData.role) {
-      case "customer":
+    switch (userData.role.name) {
+      case "CUSTOMER":
         navigate("/mantenimientos/citas");
         break;
-      case "employee":
+      case "EMPLOYEE":
         navigate("/mantenimientos/ver");
         break;
-      case "admin":
+      case "ADMINISTRADOR":
         navigate("/dashboard");
         break;
       default:

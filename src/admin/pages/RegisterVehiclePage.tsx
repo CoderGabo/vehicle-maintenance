@@ -18,7 +18,7 @@ import { useMutation, useQuery } from "@apollo/client";
 import { GET_USERS } from "../../graphql/users/queries-users";
 import { CREATE_VEHICLE } from "../../graphql/vehicles/mutations-vehicles";
 import { GET_VEHICLES } from "../../graphql/vehicles/queries-vehicles";
-import {instanceIA} from "../../utils/axiosConfig"
+// import {instanceIA} from "../../utils/axiosConfig"
 import { Role } from "../../interface/role.interface";;
 
 interface UserData {
@@ -79,39 +79,39 @@ export const RegisterVehiclePage = () => {
     },
   });
 
-  const uploadFile = async (imageUrl: string) => {
-    const data = {
-      url_photo: imageUrl
-    };
-    console.log(data);
+  // const uploadFile = async (imageUrl: string) => {
+  //   const data = {
+  //     url_photo: imageUrl
+  //   };
+  //   console.log(data);
 
-    try {
-        const response = await instanceIA.post('generate_object3D', data, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+  //   try {
+  //       const response = await instanceIA.post('generate_object3D', data, {
+  //           headers: {
+  //               'Content-Type': 'application/json'
+  //           }
+  //       });
 
-        // Asegúrate de ajustar esto según la respuesta de tu API
-        return response.data.url;
-    } catch (error) {
-        console.error('Error uploading file:', error);
-        return null;
-    }
-  };
+  //       // Asegúrate de ajustar esto según la respuesta de tu API
+  //       return response.data.url;
+  //   } catch (error) {
+  //       console.error('Error uploading file:', error);
+  //       return null;
+  //   }
+  // };
 
   const onSubmit = async (data: VehicleFormData) => {
     console.log(data, selectedYear, selectedFile, selectedUser);
 
-    let fileUrl = null;
-    if (selectedFile) {
-      fileUrl = await uploadFile('https://www.gac-motor.com/static/es/model/images/gs3/car-vehicle-color2.png');
-    }
+    // let fileUrl = null;
+    // if (selectedFile) {
+    //   fileUrl = await uploadFile('https://www.gac-motor.com/static/es/model/images/gs3/car-vehicle-color2.png');
+    // }
 
-    if (!fileUrl) {
-      console.error('File upload failed');
-      return;
-    }
+    // if (!fileUrl) {
+    //   console.error('File upload failed');
+    //   return;
+    // }
 
     createVehicle({
       variables: {
@@ -125,7 +125,7 @@ export const RegisterVehiclePage = () => {
         },
       },
     });
-    console.log(fileUrl);
+    // console.log(fileUrl);
   };
 
   return (
