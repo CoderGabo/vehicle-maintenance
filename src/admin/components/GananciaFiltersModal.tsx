@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import axios from "../../utils/axiosConfig";
+import {instanceBussiness} from "../../utils/axiosConfig";
 
 import { BaseFiltersModal } from './BaseFiltersModal';
 import { GananciaFiltersModalProps } from '../../interface/gananciaFilters.interface';
@@ -10,7 +10,7 @@ export const GananciaFiltersModal: React.FC<GananciaFiltersModalProps> = ({ isOp
 
     const fetchYears = async () => {
         try {
-            const response = await axios.get<{maintenance_years: number[]}>('get-year-maintenance/');
+            const response = await instanceBussiness.get<{maintenance_years: number[]}>('get-year-maintenance/');
             setYears(response.data.maintenance_years)
         } catch (error) {
             console.error('Error al obtener los datos de los años:', error);

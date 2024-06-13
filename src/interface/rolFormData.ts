@@ -1,7 +1,5 @@
-  
 export interface RolFormData {
-    nombre: string;
-    descripcion: string;
-    permisos: string[];
+  name: string;
+  description: string;
+  permissions: string[];
 }
-  

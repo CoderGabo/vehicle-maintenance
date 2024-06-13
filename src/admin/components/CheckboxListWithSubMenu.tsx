@@ -1,15 +1,18 @@
-import React from 'react';
-import { Box, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
-import { MenuItem, menuItems } from '../../viagio/components/layout/menuItem'; // Suponiendo que este es tu archivo menuItems
-import { useController, Control } from 'react-hook-form';
-import { RolFormData } from '../../interface/rolFormData';
+import React from "react";
+import { Box, Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { MenuItem, menuItems } from "../../viagio/components/layout/menuItem"; // Suponiendo que este es tu archivo menuItems
+import { useController, Control } from "react-hook-form";
+import { RolFormData } from "../../interface/rolFormData";
 
 interface Props {
   control: Control<RolFormData>; // Asumiendo que RolFormData es el tipo de tus datos de formulario
 }
 
 export const CheckboxListWithSubMenu: React.FC<Props> = ({ control }) => {
-  const { field: permisosField } = useController({ name: 'permisos', control });
+  const { field: permisosField } = useController({
+    name: "permissions",
+    control,
+  });
 
   const handleCheckboxChange = (permiso: string) => {
     const currentPermisos = permisosField.value || [];
@@ -20,7 +23,10 @@ export const CheckboxListWithSubMenu: React.FC<Props> = ({ control }) => {
     permisosField.onChange(newPermisos);
   };
 
-  const renderCheckbox = (menuItem: MenuItem, isSubMenu?: boolean): React.ReactElement => {
+  const renderCheckbox = (
+    menuItem: MenuItem,
+    isSubMenu?: boolean
+  ): React.ReactElement => {
     const marginLeft = isSubMenu ? 2 : 0;
 
     return (
@@ -33,18 +39,20 @@ export const CheckboxListWithSubMenu: React.FC<Props> = ({ control }) => {
           />
         }
         label={menuItem.name}
-        sx={{ color: '#616161', marginLeft }}
+        sx={{ color: "#616161", marginLeft }}
       />
     );
   };
 
-  const renderSubMenuCheckboxes = (subMenu: MenuItem[] | undefined): React.ReactElement | null => {
+  const renderSubMenuCheckboxes = (
+    subMenu: MenuItem[] | undefined
+  ): React.ReactElement | null => {
     if (!subMenu) return null;
 
     return (
       <Box maxHeight="100px" overflow="auto">
         {subMenu.map((subMenuItem) => (
-          <div key={subMenuItem.name} style={{ marginLeft: '2rem' }}>
+          <div key={subMenuItem.name} style={{ marginLeft: "2rem" }}>
             {renderCheckbox(subMenuItem, true)}
           </div>
         ))}

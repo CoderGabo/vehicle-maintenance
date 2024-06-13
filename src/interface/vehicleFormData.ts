@@ -1,7 +1,9 @@
 export interface VehicleFormData {
-    marca: string;
-    modelo: string;
-    placa: string;
-    vin: string;
-    anio: string;
+  id?: string;
+  brand: string;
+  model: string;
+  licensePlate: string;
+  vin: string;
+  year: number;
+  customerId: string;
 }

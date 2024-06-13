@@ -1,220 +1,332 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Box, Typography, Button, FormControlLabel, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions, Divider, Card, CardHeader, TextField, CardContent } from '@mui/material';
-import { ViagioLayout } from '../viagio/layout/ViagioLayout';
-
-interface Service {
-    name: string;
-    cost?: number; // Ahora cost es opcional
-}
-
-interface MaintenanceDetail {
-    vehicle: string;
-    licensePlate: string;
-    model: string;
-    brand: string;
-    description: string;
-    status: string;
-}
-
-interface MaintenanceDetailProps {
-    [key: string]: MaintenanceDetail;
-}
-
-const maintenanceDetails: MaintenanceDetailProps = {
-    '1': {
-        vehicle: 'Vehículo XYZ',
-        licensePlate: 'ABC-123',
-        model: '2023',
-        brand: 'Toyota',
-        description: 'El cliente reporta un ruido extraño en el motor.',
-        status: 'in-progress',
-    },
-    // Agrega más detalles de mantenimiento si es necesario
-};
-
-const serviceDetailsExample: Service[] = [
-    { name: 'Cambio de aceite'},
-    { name: 'Cambio de llantas'},
-    // Agregar más detalles de servicios si es necesario
-];
-
-const availableServices: Service[] = [
-    { name: 'Cambio de aceite' },
-    { name: 'Cambio de llantas' },
-    { name: 'Limpieza externa' },
-    { name: 'Revisión de frenos'},
-    { name: 'Alineación y balanceo' },
-    { name: 'Cambio de filtro de aire' },
-    { name: 'Revisión de la suspensión'},
-    { name: 'Cambio de bujías' },
-    { name: 'Alineación de dirección'},
-    { name: 'Alineación de dirección foehfofihfofwhi'},
-];
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  Card,
+  CardHeader,
+  TextField,
+  CardContent,
+  Alert,
+} from "@mui/material";
+import { ViagioLayout } from "../viagio/layout/ViagioLayout";
+import { useMutation, useQuery } from "@apollo/client";
+import {
+  GET_MAINTENANCES_NOT_COMPLETED,
+  GET_MAINTENANCE_BY_ID,
+} from "../graphql/maintenances/queries-maintenances";
+import {
+  ADD_DETAILS,
+  COMPLETED_STATUS,
+} from "../graphql/maintenances/mutations-maintenances";
+import { GET_SERVICES } from "../graphql/services/queries-services";
+import { Service } from "../interface/service.interface";
 
 export const SetDetailMaintenancePage = () => {
-    const { idMantenimiento } = useParams<{ idMantenimiento: string }>();
-    const [selectedServices, setSelectedServices] = useState<{ [key: string]: boolean }>({});
-    const [serviceCosts, setServiceCosts] = useState<{ [key: string]: number }>({});
-    const [maintenanceDescription, setMaintenanceDescription] = useState<string>('');
-    const [dialogOpen, setDialogOpen] = useState(false);
+  const { idMantenimiento } = useParams<{ idMantenimiento: string }>();
+  const [selectedServices, setSelectedServices] = useState<{
+    [key: string]: { id: string; description: string };
+  }>({});
+  const [serviceCosts, setServiceCosts] = useState<{ [key: string]: number }>(
+    {}
+  );
+  const [maintenanceDescription, setMaintenanceDescription] =
+    useState<string>("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const navigate = useNavigate();
 
-    if (!idMantenimiento || !maintenanceDetails[idMantenimiento]) {
-        return <Typography>No se encontraron detalles para esta cita.</Typography>;
+  const { data: servicesData } = useQuery(GET_SERVICES);
+  const services = useMemo(() => servicesData?.services || [], [servicesData]);
+
+  const { data: maintenanceData, error } = useQuery(GET_MAINTENANCE_BY_ID, {
+    variables: { id: idMantenimiento },
+  });
+
+  const result = useQuery(GET_MAINTENANCE_BY_ID, {
+    variables: { id: idMantenimiento },
+  });
+
+  console.log(result);
+
+  const maintenance = useMemo(
+    () => maintenanceData?.maintenance || null,
+    [maintenanceData]
+  );
+  console.log(error);
+  const [addDetails] = useMutation(ADD_DETAILS, {
+    refetchQueries: [{ query: GET_MAINTENANCES_NOT_COMPLETED }],
+  });
+
+  const [completedStatus, { loading: statusLoading, error: statusError }] =
+    useMutation(COMPLETED_STATUS, {
+      refetchQueries: [{ query: GET_MAINTENANCES_NOT_COMPLETED }],
+      onCompleted: () => {
+        setShowSuccessAlert(true);
+        setTimeout(() => setShowSuccessAlert(false), 4000);
+        navigate("/mantenimientos/ver");
+      },
+    });
+
+  const handleServiceChange = (service: Service) => {
+    setSelectedServices((prev) => {
+      const newSelectedServices = { ...prev };
+      if (newSelectedServices[service.id]) {
+        delete newSelectedServices[service.id];
+      } else {
+        newSelectedServices[service.id] = {
+          id: service.id,
+          description: service.name,
+        };
+      }
+      return newSelectedServices;
+    });
+  };
+
+  const handleCostChange = (serviceId: string, cost: number) => {
+    if (!isNaN(cost)) {
+      setServiceCosts((prev) => ({
+        ...prev,
+        [serviceId]: cost,
+      }));
     }
+  };
 
-    const appointmentDetails = maintenanceDetails[idMantenimiento];
+  const handleOpenDialog = () => {
+    setDialogOpen(true);
+  };
 
-    const handleServiceChange = (serviceName: string) => {
-        setSelectedServices(prev => ({
-            ...prev,
-            [serviceName]: !prev[serviceName],
-        }));
-    };
+  const handleCloseDialog = (): void => {
+    setDialogOpen(false);
+  };
 
-    const handleCostChange = (serviceName: string, cost: number): void => {
-        setServiceCosts(prev => ({
-            ...prev,
-            [serviceName]: cost,
-        }));
-    };
+  const handleRegisterServices = (): void => {
+    addDetails({
+      variables: {
+        detailDtos: Object.values(selectedServices).map((service) => ({
+          id: service.id,
+          description: service.description,
+          cost: serviceCosts[service.id] || 0,
+        })),
+        id: idMantenimiento,
+      },
+    });
+    handleCloseDialog();
+  };
 
-    const handleOpenDialog = () => {
-        setDialogOpen(true);
-    };
+  const handleMaintenanceEnd = (): void => {
+    completedStatus({
+      variables: {
+        id: idMantenimiento,
+        detailDtos: Object.values(selectedServices).map((service) => ({
+          id: service.id,
+          description: service.description,
+          cost: serviceCosts[service.id] || 0,
+        })),
+        description: maintenanceDescription,
+      },
+    });
+  };
 
-    const handleCloseDialog = (): void => {
-        setDialogOpen(false);
-    };
-
-    const handleRegisterServices = ():void => {
-        // Aquí puedes agregar lógica para registrar los servicios seleccionados
-        handleCloseDialog();
-    };
-
-    const handleMaintenanceEnd = (): void => {
-        console.log(selectedServices, maintenanceDescription);
+  const calculateTotalCost = () => {
+    let total = 0;
+    for (const serviceId in selectedServices) {
+      if (selectedServices[serviceId] && serviceCosts[serviceId]) {
+        total += serviceCosts[serviceId];
+      }
     }
+    return total;
+  };
 
-    const calculateTotalCost = () => {
-        let total = 0;
-        for (const serviceName in selectedServices) {
-            if (selectedServices[serviceName] && serviceCosts[serviceName]) {
-                total += serviceCosts[serviceName];
-            }
-        }
-        return total;
-    };
+  useEffect(() => {
+    if (maintenance && maintenance.details && services.length > 0) {
+      const initialSelectedServices = maintenance.details.reduce(
+        (acc, item) => {
+          const serviceFound = services.find(
+            (service) => service.id === item.id
+          );
+          if (serviceFound) {
+            acc[item.id] = {
+              id: item.id,
+              description: serviceFound.name,
+            };
+          }
+          return acc;
+        },
+        {}
+      );
+      console.log("siiiii");
+      console.log(initialSelectedServices);
+      setSelectedServices(initialSelectedServices);
+    } else {
+      // Aquí puedes manejar el caso en que `maintenance.details` sea undefined o services aún no esté cargado
+      console.log(
+        "maintenance.details es undefined o services aún no está cargado"
+      );
+    }
+  }, [services, maintenance]);
 
-    useEffect(() => {
-        const initialSelectedServices: { [key: string]: boolean }  = {};
-        availableServices.forEach(service => {
-            const match = serviceDetailsExample.find(s => s.name === service.name);
-            initialSelectedServices[service.name] = !!match;
-        });
-        setSelectedServices(initialSelectedServices);
-    }, []);
+  if (!idMantenimiento) {
+    return <Typography>No se encontraron detalles para esta cita.</Typography>;
+  }
 
-    return (
-        <ViagioLayout>
-            <Box sx={{ p: 3 }}>
-                <Typography variant="h5" gutterBottom sx={{ color: '#616161' }}>
-                    Mantenimiento del vehículo {appointmentDetails.licensePlate}
-                </Typography>
-                <Typography variant="h6" gutterBottom sx={{ color: '#616161' }}>
-                    Modelo: {appointmentDetails.model} Marca: {appointmentDetails.brand}
-                </Typography>
-                <Typography variant="h6" gutterBottom sx={{ color: '#616161' }}>
-                    Descripción del cliente: {appointmentDetails.description}
-                </Typography>
+  return (
+    <ViagioLayout>
+      {showSuccessAlert && (
+        <Alert severity="success">Mantenimiento finalizado</Alert>
+      )}
+      {statusError && <Alert severity="error">{String(statusError)}</Alert>}
+      {maintenance && (
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom sx={{ color: "#616161" }}>
+            Mantenimiento del vehículo {maintenance.vehicle.licensePlate}
+          </Typography>
+          <Typography variant="h6" gutterBottom sx={{ color: "#616161" }}>
+            Modelo: {maintenance.vehicle.model} Marca:{" "}
+            {maintenance.vehicle.brand}
+          </Typography>
 
-                <Box sx={{ mt: 4 }}>
-                    <Button variant="contained" color="primary" onClick={handleOpenDialog}>
-                        Añadir Servicios
-                    </Button>
+          <Box sx={{ mt: 4 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleOpenDialog}
+            >
+              Añadir Servicios
+            </Button>
 
-                    <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-                        <DialogTitle>Seleccionar Servicios</DialogTitle>
-                        <DialogContent>
-                        {availableServices.map((service, index) => (
-                            <Box key={index} sx={{ mb: 2 }}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={!!selectedServices[service.name]}
-                                            onChange={() => handleServiceChange(service.name)}
-                                        />
-                                    }
-                                    label={service.name}
-                                />
-                                <TextField
-                                    type="number"
-                                    label="Costo (Bs)"
-                                    value={serviceCosts[service.name] || ''}
-                                    onChange={(e) => handleCostChange(service.name, parseInt(e.target.value))}
-                                    sx={{ mt: 1 }}
-                                />
-                            </Box>
-                        ))}
-                    </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleCloseDialog} color="secondary" variant='outlined'>Cancelar</Button>
-                            <Button onClick={handleRegisterServices} color="primary" variant='contained'>Registrar Servicios</Button>
-                        </DialogActions>
-                    </Dialog>
-
-                    <Box sx={{ mt: 4 }}>
-                        <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            <Typography variant="subtitle1" gutterBottom sx={{ color: '#616161' }}>
-                                Servicios seleccionados:
-                            </Typography>
-                            {/* Mostrar los nuevos servicios seleccionados por el empleado */}
-                            {availableServices
-                                .filter(service => selectedServices[service.name])
-                                .map((service, index) => (
-                                    <Card key={index} sx={{ mb: 2 }}>
-                                        <CardHeader
-                                            title={service.name}
-                                            action={
-                                                <Checkbox
-                                                    checked={!!selectedServices[service.name]}
-                                                    onChange={() => handleServiceChange(service.name)}
-                                                />
-                                            }
-                                        />
-                                        <CardContent>
-                                            <TextField
-                                                label="Costo (Bs)"
-                                                value={serviceCosts[service.name] || ''}
-                                                onChange={(e) => handleCostChange(service.name, parseInt(e.target.value))}
-                                                sx={{ mt: 1 }}
-                                            />
-                                        </CardContent>
-                                    </Card>
-                            ))}
-                        </Box>
-                        <Divider sx={{ my: 2 }} />
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                            <Typography variant="h6" sx={{ color: '#616161' }}>Total a pagar:</Typography>
-                            <Typography variant="h6" sx={{ color: '#616161' }}>Bs {calculateTotalCost()}</Typography>
-                        </Box>
-                        <Divider sx={{ my: 2 }} />
-                        <TextField
-                            label="Descripción del mantenimiento"
-                            variant="outlined"
-                            fullWidth
-                            multiline
-                            value={maintenanceDescription}
-                            onChange={(e) => setMaintenanceDescription(e.target.value)}
-                            sx={{ mt: 2, color: '#616161' }}
-                            InputProps={{style: {color: '#616161'}}}
+            <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+              <DialogTitle>Seleccionar Servicios</DialogTitle>
+              <DialogContent>
+                {services.map((service: Service) => (
+                  <Box key={service.id} sx={{ mb: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            !!(selectedServices && selectedServices[service.id])
+                          }
+                          onChange={() => handleServiceChange(service)}
                         />
-                        <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={() => handleMaintenanceEnd()}>
-                            Finalizar Mantenimiento
-                        </Button>
-                    </Box>
-                </Box>
+                      }
+                      label={service.name}
+                    />
+                    <TextField
+                      type="number"
+                      label="Costo (Bs)"
+                      value={serviceCosts[service.id] || ""}
+                      onChange={(e) =>
+                        handleCostChange(service.id, parseInt(e.target.value))
+                      }
+                      sx={{ mt: 1 }}
+                    />
+                  </Box>
+                ))}
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={handleCloseDialog}
+                  color="secondary"
+                  variant="outlined"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleRegisterServices}
+                  color="primary"
+                  variant="contained"
+                >
+                  Registrar Servicios
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            <Box sx={{ mt: 4 }}>
+              <Box sx={{ maxHeight: "400px", overflowY: "auto" }}>
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  sx={{ color: "#616161" }}
+                >
+                  Servicios seleccionados:
+                </Typography>
+                {services
+                  .filter((service) => selectedServices[service.id])
+                  .map((service) => (
+                    <Card key={service.id} sx={{ mb: 2 }}>
+                      <CardHeader
+                        title={service.name}
+                        action={
+                          <Checkbox
+                            checked={!!selectedServices[service.id]}
+                            onChange={() => handleServiceChange(service)}
+                          />
+                        }
+                      />
+                      <CardContent>
+                        <TextField
+                          label="Costo (Bs)"
+                          value={serviceCosts[service.id] || ""}
+                          onChange={(e) =>
+                            handleCostChange(
+                              service.id,
+                              parseInt(e.target.value)
+                            )
+                          }
+                          sx={{ mt: 1 }}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+              </Box>
+              <Divider sx={{ my: 2 }} />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mt: 2,
+                }}
+              >
+                <Typography variant="h6" sx={{ color: "#616161" }}>
+                  Total a pagar:
+                </Typography>
+                <Typography variant="h6" sx={{ color: "#616161" }}>
+                  Bs {calculateTotalCost()}
+                </Typography>
+              </Box>
+              <Divider sx={{ my: 2 }} />
+              <TextField
+                label="Descripción del mantenimiento"
+                variant="outlined"
+                fullWidth
+                multiline
+                value={maintenanceDescription}
+                onChange={(e) => setMaintenanceDescription(e.target.value)}
+                sx={{ mt: 2, color: "#616161" }}
+                InputProps={{ style: { color: "#616161" } }}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2 }}
+                disabled={statusLoading}
+                onClick={handleMaintenanceEnd}
+              >
+                {statusLoading ? "Enviando..." : "Finalizar Mantenimiento"}
+              </Button>
             </Box>
-        </ViagioLayout>
-    );
+          </Box>
+        </Box>
+      )}
+    </ViagioLayout>
+  );
 };

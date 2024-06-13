@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Checkbox, FormControl, InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
 
-import axios from "../../utils/axiosConfig";
+import {instanceBussiness} from "../../utils/axiosConfig";
 
 import { BaseFiltersModal } from './BaseFiltersModal';
 import { MaintenanceFiltersModalProps } from '../../interface/maintenanceFilters.interface';
@@ -14,10 +14,10 @@ export const MaintenanceFiltersModal: React.FC<MaintenanceFiltersModalProps> = (
 
     const fetchData = async () => {
         try {
-            const yearResponse = await axios.get<{maintenance_years: number[]}>('get-year-maintenance/');
+            const yearResponse = await instanceBussiness.get<{maintenance_years: number[]}>('get-year-maintenance/');
             setYears(yearResponse.data.maintenance_years)
 
-            const brandResponse = await axios.get<{vehicle_brands: string[]}>('get-brand-vehicles/');
+            const brandResponse = await instanceBussiness.get<{vehicle_brands: string[]}>('get-brand-vehicles/');
             setBrands(brandResponse.data.vehicle_brands)
         } catch (error) {
             console.error('Error al obtener los datos de los años:', error);

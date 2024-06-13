@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BaseFiltersModal } from './BaseFiltersModal';
-import axios from "../../utils/axiosConfig";
+import {instanceBussiness} from "../../utils/axiosConfig";
 
 import { ServiceFiltersModalProps } from '../../interface/serviceFilters.interface';
 import { Checkbox, FormControl, InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
@@ -13,10 +13,10 @@ export const ServiceFiltersModal: React.FC<ServiceFiltersModalProps> = ({ isOpen
 
     const fetchData = async () => {
         try {
-            const yearResponse = await axios.get<{maintenance_years: number[]}>('get-year-maintenance/');
+            const yearResponse = await instanceBussiness.get<{maintenance_years: number[]}>('get-year-maintenance/');
             setYears(yearResponse.data.maintenance_years)
 
-            const serviceResponse = await axios.get<{service_names: string[]}>('get-service-names/');
+            const serviceResponse = await instanceBussiness.get<{service_names: string[]}>('get-service-names/');
             setServices(serviceResponse.data.service_names)
         } catch (error) {
             console.error('Error al obtener los datos de los años:', error);

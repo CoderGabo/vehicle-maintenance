@@ -1,11 +1,12 @@
 export interface FormData {
-    direccion: string;
-    correo: string;
-    nombre: string;
-    apellido: string;
-    telefono: string;
-    rol: string;
-    cargo: string;
-    password: string;
-    username: string;
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  position: string;
+  roleId: string;
+  username: string;
+  password: string;
 }

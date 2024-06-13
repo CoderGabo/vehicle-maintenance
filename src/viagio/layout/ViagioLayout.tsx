@@ -1,8 +1,9 @@
 
-import { ReactNode, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { ReactNode, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box, CssBaseline, Drawer, List, ListItemIcon, ListItemText, useMediaQuery, useTheme, IconButton, ListItemButton, Typography, Collapse } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { ExitToApp } from '@mui/icons-material';
 
 import {menuItems, MenuItem} from "../components/layout/menuItem";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
@@ -12,15 +13,17 @@ interface ViagioLayoutProps {
     children: ReactNode;
 }
 
+interface User {
+    userId: string;
+    username: string;
+    token: string;
+    role: string;
+  }
+
 const drawerWidth = 240;
 
-const user = {
-    nombre: "Gabriel",
-    rol: "admin",
-    permisos: ["Gestion de Usuarios", "Ver Usuarios"] // Ejemplo de permisos
-};
-
 export const ViagioLayout = ({children}: ViagioLayoutProps) => {
+    const navigate = useNavigate();
     const location = useLocation();
 
     const theme = useTheme();
@@ -41,11 +44,72 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
         setOpenSubMenus(newOpenSubMenus);
     };
 
+    // Estado para almacenar los permisos del usuario
+    const [permissions, setPermissions] = useState<string[]>([]);
+
+    useEffect(() => {
+        // Simulación de obtención de datos de localStorage
+        const userData: User = JSON.parse(localStorage.getItem("user")|| "{}");
+
+        // Definición de permisos basados en el rol del usuario
+        const userPermissions = getPermissions(userData.role);
+        setPermissions(userPermissions);
+    }, []);
+
+    const getPermissions = (role: string): string[] => {
+        switch (role) {
+          case "customer":
+            return [
+                "Gestion de Vehículos",
+                "Ver Vehículos",
+                "Gestión de Mantenimientos",
+                "Ver Citas de Mantenimiento",
+            ];
+          case "employee":
+            return [
+                "Gestión de Mantenimientos",
+                "Ver Citas de Mantenimiento",
+                "Ver Mantenimientos",
+                "Gestion de Servicios",
+                "Registrar Servicios",
+                "Ver Servicios"
+            ];
+          case "admin":
+            return [
+                "Dashboard",
+                "Gestion de Usuarios",
+                "Registrar Usuario",
+                "Ver Usuarios",
+                "Gestión de Roles",
+                "Registrar Roles",
+                "Ver Roles",
+                "Gestion de Vehículos",
+                "Registrar Vehículo",
+                "Ver Vehículos",
+                "Gestión de Mantenimientos",
+                "Ver Citas de Mantenimiento",
+                "Ver Mantenimientos",
+                "Gestion de Servicios",
+                "Registrar Servicios",
+                "Ver Servicios"
+            ];
+          default:
+            return [];
+        }
+      };
+
+    const handleLogout = () => {
+        // Limpiar datos de usuario del localStorage
+        localStorage.removeItem("user");
+        // Redirigir a la página de inicio de sesión (o a cualquier otra página deseada)
+        navigate('/login');
+    };
+
     const renderMenuItems = (items: MenuItem[], parentOpen: boolean) => {
         return items.map((item, index) => {
-            // if (!user.permisos.includes(item.name)) {
-            //     return null; // No renderizar el elemento si el usuario no tiene permisos
-            // }
+            if (!permissions.includes(item.name)) {
+                return null; // No renderizar el elemento si el usuario no tiene permisos
+            }
             
             const isOpen = openSubMenus[index];
             const hasSubMenu = item.subMenu && item.subMenu.length > 0;
@@ -108,7 +172,18 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
 
     const drawer = (
         <Box onClick={handleDrawerToggle}>
-            <Box sx={{ height: toolBarHeight, display: 'flex'}}> {/* Simulando un Toolbar */}
+            <Box sx={{ height: toolBarHeight, display: 'flex' }}> {/* Simulando un Toolbar */}
+                <IconButton
+                    aria-label="cerrar sesión"
+                    onClick={handleLogout}
+                    sx={{
+                        position: 'absolute',
+                        left: theme.spacing(25),
+                        color: 'orange',
+                    }}
+                >
+                    <ExitToApp />
+                </IconButton>
             </Box>
             <Typography variant="h6" sx={{ paddingLeft: 1 }}>
                 Menú de Navegación

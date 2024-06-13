@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Container, Grid } from '@mui/material';
 
-import axios from "../../utils/axiosConfig";
+import {instanceBussiness} from "../../utils/axiosConfig";
 
 import { ViagioLayout } from "../../viagio/layout/ViagioLayout";
 import { GraphsComponent } from '../components/graphsComponent';
@@ -24,15 +24,15 @@ export const DashboardPage = () => {
     const fetchData = async (dataType: string = '', filters: any = {}) => {
         try {
             if (dataType === '' || dataType === 'servicios-adicionales') {
-                const response = await axios.get<{ figura: Data }>('kpi/servicios-adicionales/', { params: filters });
+                const response = await instanceBussiness.get<{ figura: Data }>('kpi/servicios-adicionales/', { params: filters });
                 setServiceData(response.data.figura);
             }
             if (dataType === '' || dataType === 'ganancias-totales') {
-                const gananciaResponse = await axios.get<{ figura: Data }>('kpi/ganancias-totales/', { params: filters });
+                const gananciaResponse = await instanceBussiness.get<{ figura: Data }>('kpi/ganancias-totales/', { params: filters });
                 setGananciaData(gananciaResponse.data.figura);
             }
             if (dataType === '' || dataType === 'vehiculos-mantenimiento') {
-                const maintenanceReponse = await axios.get<{ figura: Data }>('kpi/vehiculos-mantenimiento/', { params: filters });
+                const maintenanceReponse = await instanceBussiness.get<{ figura: Data }>('kpi/vehiculos-mantenimiento/', { params: filters });
                 setMaintenanceData(maintenanceReponse.data.figura);
             }
             setLoading(false);

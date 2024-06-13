@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { ViagioPage } from "../viagio/pages/ViagioPage";
 import { DashboardPage } from "../admin/pages/DashboardPage";
 import { RegisterUserPage } from "../admin/pages/RegiserUserPage";
@@ -16,33 +16,62 @@ import { SeeRolPage } from "../admin/pages/SeeRolPage";
 import { SeeDetailMaintenance } from "../customer/SeeDetailMaintenance";
 import { LoginPage } from "../admin/pages/LoginPage";
 
+interface UserData {
+  userId: string;
+  username: string;
+  token: string;
+  role: string;
+}
+
 export const AppRouter = () => {
+
+  const userDataStr = localStorage.getItem("user");
+  const userData: UserData | null = userDataStr ? JSON.parse(userDataStr) : null;
+
+  // Determinar si el usuario está autenticado basado en la presencia de token
+  const isAuthenticated = userData && userData.token;
+
   return (
     <Routes>
-        <Route path="/" element={ <ViagioPage /> }/>
+      {/* Ruta de inicio de sesión */}
+      <Route path="/login" element={<LoginPage />} />
 
-        <Route path="/login" element={ <LoginPage /> }/>
+      {/* Proteger las rutas autenticadas */}
+      {!isAuthenticated && <Route path="*" element={<Navigate to="/login" />} />}
 
-        <Route path="/dashboard" element={ <DashboardPage /> }/>
+      {/* Rutas autenticadas */}
+      {isAuthenticated && (
+        <>
+          <Route path="/" element={<ViagioPage />} />
 
-        <Route path="/usuarios/registrar" element={ <RegisterUserPage /> }/>
-        <Route path="/usuarios/ver" element={ <SeeUsersPage /> }/>
+          <Route path="/dashboard" element={<DashboardPage />} />
 
-        <Route path="/roles/registrar" element={ <RegisterRolPage /> }/>
-        <Route path="/roles/ver" element={ <SeeRolPage /> }/>
+          <Route path="/usuarios/registrar" element={<RegisterUserPage />} />
+          <Route path="/usuarios/ver" element={<SeeUsersPage />} />
 
-        <Route path="/vehiculos/registrar" element={ <RegisterVehiclePage /> }/>
-        <Route path="/vehiculos/ver" element={ <SeeVehiclesPage /> }/>
+          <Route path="/roles/registrar" element={<RegisterRolPage />} />
+          <Route path="/roles/ver" element={<SeeRolPage />} />
 
-        <Route path="/servicios/registrar" element={ <RegisterServicePage /> }/>
-        <Route path="/servicios/ver" element={ <SeeServicePage /> }/>
+          <Route path="/vehiculos/registrar" element={<RegisterVehiclePage />} />
+          <Route path="/vehiculos/ver" element={<SeeVehiclesPage />} />
 
-        <Route path="/mantenimientos/citas" element={ <RegisterAppointmentPage /> }/>
+          <Route path="/servicios/registrar" element={<RegisterServicePage />} />
+          <Route path="/servicios/ver" element={<SeeServicePage />} />
 
-        <Route path="/mantenimientos/ver" element={ <SeeMaintenancePage /> }/>
-        <Route path="/mantenimiento/detalle/:idMantenimiento" element={ <SetDetailMaintenancePage /> }/>
+          <Route path="/mantenimientos/citas" element={<RegisterAppointmentPage />} />
 
-        <Route path="/mantenimiento/detalle/cliente/:idMantenimiento" element={ <SeeDetailMaintenance /> }/>
+          <Route path="/mantenimientos/ver" element={<SeeMaintenancePage />} />
+          <Route
+            path="/mantenimiento/detalle/:idMantenimiento"
+            element={<SetDetailMaintenancePage />}
+          />
+
+          <Route
+            path="/mantenimiento/detalle/cliente/:idCita"
+            element={<SeeDetailMaintenance />}
+          />
+        </>
+      )}
     </Routes>
-  )
-}
+  );
+};
