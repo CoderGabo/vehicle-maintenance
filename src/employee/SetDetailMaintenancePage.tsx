@@ -149,9 +149,9 @@ export const SetDetailMaintenancePage = () => {
   useEffect(() => {
     if (maintenance && maintenance.details && services.length > 0) {
       const initialSelectedServices = maintenance.details.reduce(
-        (acc, item) => {
+        (acc: any, item: any) => {
           const serviceFound = services.find(
-            (service) => service.id === item.id
+            (service: any) => service.id === item.id
           );
           if (serviceFound) {
             acc[item.id] = {
@@ -259,8 +259,8 @@ export const SetDetailMaintenancePage = () => {
                   Servicios seleccionados:
                 </Typography>
                 {services
-                  .filter((service) => selectedServices[service.id])
-                  .map((service) => (
+                  .filter((service: any) => selectedServices[service.id])
+                  .map((service: any) => (
                     <Card key={service.id} sx={{ mb: 2 }}>
                       <CardHeader
                         title={service.name}

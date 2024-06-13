@@ -26,33 +26,33 @@ const data = {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  // const [login, { loading, error }] = useMutation(LOGIN, {
-  //   onCompleted: (data) => {
-  //     // Asegúrate de que este código se ejecuta solo después de que la mutación se haya completado con éxito.
-  //     localStorage.setItem(
-  //       "user",
-  //       JSON.stringify({
-  //         userId: data.login.id,
-  //         username: data.login.username,
-  //         token: data.login.token,
-  //         role: data.login.role,
-  //       })
-  //     );
-  //     navigateToCorrectRoute();
-  //   },
-  // });
+  const [login, { loading, error }] = useMutation(LOGIN, {
+    onCompleted: (data) => {
+      // Asegúrate de que este código se ejecuta solo después de que la mutación se haya completado con éxito.
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          userId: data.login.id,
+          username: data.login.username,
+          token: data.login.token,
+          role: data.login.role,
+        })
+      );
+      navigateToCorrectRoute();
+    },
+  });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const dataform = new FormData(event.currentTarget);
-    // login({
-    //   variables: {
-    //     authDto: {
-    //       username: dataform.get("username"),
-    //       password: dataform.get("password"),
-    //     },
-    //   },
-    // });
+    login({
+      variables: {
+        authDto: {
+          username: dataform.get("username"),
+          password: dataform.get("password"),
+        },
+      },
+    });
 
     localStorage.setItem(
       "user",
@@ -95,8 +95,8 @@ export const LoginPage = () => {
           alignItems: "center",
         }}
       >
-        {/* {loading && <CircularProgress />}
-        {error && <Alert severity="error">{String(error)}</Alert>} */}
+        {loading && <CircularProgress />}
+        {error && <Alert severity="error">{String(error)}</Alert>}
         <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
           <LockOutlinedIcon />
         </Avatar>

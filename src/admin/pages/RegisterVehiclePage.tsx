@@ -79,22 +79,24 @@ export const RegisterVehiclePage = () => {
     },
   });
 
-  const uploadFile = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
+  const uploadFile = async (imageUrl: string) => {
+    const data = {
+      url_photo: imageUrl
+    };
+    console.log(data);
 
     try {
-      const response = await instanceIA.post('generate_object3D', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+        const response = await instanceIA.post('generate_object3D', data, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
-      // Asegúrate de ajustar esto según la respuesta de tu API
-      return response.data.url;
+        // Asegúrate de ajustar esto según la respuesta de tu API
+        return response.data.url;
     } catch (error) {
-      console.error('Error uploading file:', error);
-      return null;
+        console.error('Error uploading file:', error);
+        return null;
     }
   };
 
@@ -103,7 +105,7 @@ export const RegisterVehiclePage = () => {
 
     let fileUrl = null;
     if (selectedFile) {
-      fileUrl = await uploadFile(selectedFile);
+      fileUrl = await uploadFile('https://www.gac-motor.com/static/es/model/images/gs3/car-vehicle-color2.png');
     }
 
     if (!fileUrl) {
@@ -123,6 +125,7 @@ export const RegisterVehiclePage = () => {
         },
       },
     });
+    console.log(fileUrl);
   };
 
   return (
