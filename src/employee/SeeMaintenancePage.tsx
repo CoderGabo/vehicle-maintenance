@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Typography, Button, Paper, Box, Pagination } from "@mui/material";
+import { Typography, Button, Paper, Box, Pagination, Alert, CircularProgress } from "@mui/material";
 import { ViagioLayout } from "../viagio/layout/ViagioLayout";
 import { useQuery } from "@apollo/client";
 import {
@@ -21,14 +21,11 @@ export const SeeMaintenancePage = () => {
 
   const [user, setUser] = useState<User | null>(null);
   const [page, setPage] = useState(1); // Estado para la página actual
-  // const [rowsPerPage, setRowsPerPage] = useState(2);
 
-  const { data: allMaintenances } = useQuery(GET_MAINTENANCES);
+  const { data: allMaintenances, loading: isLoading, error: queryError } = useQuery(GET_MAINTENANCES);
   const { data: maintenancesNotCompleted } = useQuery(
     GET_MAINTENANCES_NOT_COMPLETED
   );
-
-  console.log(allMaintenances);
 
   const handleManageMaintenance = (id: string) => {
     // Aquí puedes implementar la lógica para gestionar el mantenimiento
@@ -48,7 +45,7 @@ export const SeeMaintenancePage = () => {
   };
 
   const maintenancesToDisplay = getMaintenancesToDisplay();
-
+  console.log(maintenancesNotCompleted)
   
   useEffect(() => {
     // Simulación de obtención de datos de localStorage
@@ -66,10 +63,14 @@ export const SeeMaintenancePage = () => {
 
   return (
     <ViagioLayout>
-      <Box sx={{ mt: 4, paddingLeft: 4 }}>
+      {queryError && <Alert severity="error">{String(queryError)}</Alert>}
+      {isLoading ? (
+        <CircularProgress />
+      ) :(
+        <Box sx={{ mt: 4, paddingLeft: 4 }}>
         {maintenancesToDisplay &&
           maintenancesToDisplay
-          .slice((page - 1) * 2, page * 2)
+          .slice((page - 1) * 4, page * 4)
           .map((maintenance: Maintenance) => (
             <Paper key={maintenance.id} sx={{ p: 2, mt: 2 }}>
               <Typography variant="h6">
@@ -94,13 +95,19 @@ export const SeeMaintenancePage = () => {
           ))}
         <Box mt={4} sx={{ display: "flex", justifyContent: "center" }}>
           <Pagination
-            count={Math.ceil(maintenancesToDisplay.length / 2)}
+            count={Math.ceil(maintenancesToDisplay.length / 4)}
             page={page}
             onChange={handleChangePage}
-            color="primary"
+            color="secondary"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  color: '#616161',
+                }
+            }}
           />
         </Box>
       </Box>
+      )}
     </ViagioLayout>
   );
 };

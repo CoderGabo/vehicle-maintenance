@@ -28,24 +28,6 @@ interface ServiceFormData {
   name: string;
 }
 
-// const servicesData: ServiceFormData[] = [
-//   { id: '1', name: 'Service A', description: 'Description for Service A' },
-//   { id: '2', name: 'Service B', description: 'Description for Service B' },
-//   { id: '3', name: 'Service C', description: 'Description for Service C' },
-//   { id: '4', name: 'Service D', description: 'Description for Service D' },
-//   { id: '5', name: 'Service E', description: 'Description for Service E' },
-//   { id: '6', name: 'Service F', description: 'Description for Service F' },
-//   { id: '7', name: 'Service G', description: 'Description for Service G' },
-//   { id: '8', name: 'Service H', description: 'Description for Service H' },
-//   { id: '9', name: 'Service I', description: 'Description for Service I' },
-//   { id: '10', name: 'Service J', description: 'Description for Service J' },
-//   { id: '11', name: 'Service K', description: 'Description for Service K' },
-//   { id: '12', name: 'Service L', description: 'Description for Service L' },
-//   { id: '13', name: 'Service M', description: 'Description for Service M' },
-//   { id: '14', name: 'Service N', description: 'Description for Service N' },
-//   { id: '15', name: 'Service O', description: 'Description for Service O' },
-// ];
-
 export const SeeServicePage = () => {
   const theme = useTheme();
   const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -87,20 +69,6 @@ export const SeeServicePage = () => {
       },
     });
   };
-
-  //  // Simulamos la consulta de datos
-  // const data = { services: servicesData };
-  // const queryLoading = false;
-  // const queryError = null;
-  // const mutationLoading = false;
-  // const mutationError = null;
-
-  // const handleDeleteService = (roleId: string) => {
-  //   console.log(`Eliminar rol con id: ${roleId}`);
-  //   setShowSuccessAlert(true);
-  //   setTimeout(() => setShowSuccessAlert(false), 3000);
-  // };
-
   const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null,  newPage: number) => {
     setPage(newPage);
   };

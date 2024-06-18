@@ -56,7 +56,6 @@ export const LoginPage = () => {
       },
     });
   };
-
   const navigateToCorrectRoute = () => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
   
@@ -103,6 +102,7 @@ export const LoginPage = () => {
             name="username"
             autoComplete="username"
             autoFocus
+            InputProps={{sx: {color: '#616161'}}}
             InputLabelProps={{ sx: { color: "#616161" } }}
           />
           <TextField
@@ -114,6 +114,7 @@ export const LoginPage = () => {
             type="password"
             id="password"
             autoComplete="current-password"
+            InputProps={{sx: {color: '#616161'}}}
             InputLabelProps={{ sx: { color: "#616161" } }}
           />
           <Button

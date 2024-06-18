@@ -19,6 +19,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { ViagioLayout } from "../../viagio/layout/ViagioLayout";
 import { useEffect, useState } from "react";
 import { Role } from "../../interface/role.interface";
+import { GET_USERS } from "../../graphql/users/queries-users";
+import { DELETE_USER } from "../../graphql/users/mutations-users";
+import { useMutation, useQuery } from "@apollo/client";
 
 // Definir una interfaz para los datos de usuario
 interface UserData {
@@ -33,23 +36,23 @@ interface UserData {
   username: string;
 }
 
-const usersData = [
-  { id: '1', firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', address: '123 Main St', position: 'Manager', role: { name: 'Admin' }, username: 'johndoe' },
-  { id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '234-567-8901', address: '456 Elm St', position: 'Developer', role: { name: 'User' }, username: 'janesmith' },
-  { id: '3', firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '345-678-9012', address: '789 Pine St', position: 'Designer', role: { name: 'Editor' }, username: 'alicejohnson' },
-  { id: '4', firstName: 'Bob', lastName: 'Brown', email: 'bob.brown@example.com', phone: '456-789-0123', address: '321 Oak St', position: 'Tester', role: { name: 'Moderator' }, username: 'bobbrown' },
-  { id: '5', firstName: 'Charlie', lastName: 'Davis', email: 'charlie.davis@example.com', phone: '567-890-1234', address: '654 Cedar St', position: 'Support', role: { name: 'Viewer' }, username: 'charliedavis' },
-  { id: '6', firstName: 'David', lastName: 'Wilson', email: 'david.wilson@example.com', phone: '678-901-2345', address: '987 Birch St', position: 'HR', role: { name: 'Contributor' }, username: 'davidwilson' },
-  { id: '7', firstName: 'Ella', lastName: 'Martinez', email: 'ella.martinez@example.com', phone: '789-012-3456', address: '432 Spruce St', position: 'Analyst', role: { name: 'Manager' }, username: 'ellamartinez' },
-  { id: '8', firstName: 'Frank', lastName: 'Garcia', email: 'frank.garcia@example.com', phone: '890-123-4567', address: '123 Willow St', position: 'Operator', role: { name: 'Operator' }, username: 'frankgarcia' },
-  { id: '9', firstName: 'Grace', lastName: 'Lopez', email: 'grace.lopez@example.com', phone: '901-234-5678', address: '456 Maple St', position: 'Supervisor', role: { name: 'Supervisor' }, username: 'gracelopez' },
-  { id: '10', firstName: 'Hank', lastName: 'Lee', email: 'hank.lee@example.com', phone: '012-345-6789', address: '789 Redwood St', position: 'Consultant', role: { name: 'Assistant' }, username: 'hanklee' },
-  { id: '11', firstName: 'Ivy', lastName: 'King', email: 'ivy.king@example.com', phone: '123-456-7890', address: '321 Poplar St', position: 'Intern', role: { name: 'Analyst' }, username: 'ivyking' },
-  { id: '12', firstName: 'Jack', lastName: 'Wright', email: 'jack.wright@example.com', phone: '234-567-8901', address: '654 Fir St', position: 'Engineer', role: { name: 'Consultant' }, username: 'jackwright' },
-  { id: '13', firstName: 'Kate', lastName: 'Hill', email: 'kate.hill@example.com', phone: '345-678-9012', address: '987 Ash St', position: 'Sales', role: { name: 'Developer' }, username: 'katehill' },
-  { id: '14', firstName: 'Liam', lastName: 'Scott', email: 'liam.scott@example.com', phone: '456-789-0123', address: '123 Maple St', position: 'Marketing', role: { name: 'Tester' }, username: 'liamscott' },
-  { id: '15', firstName: 'Mia', lastName: 'Adams', email: 'mia.adams@example.com', phone: '567-890-1234', address: '456 Pine St', position: 'Customer Service', role: { name: 'Support' }, username: 'miaadams' },
-];
+// const usersData = [
+//   { id: '1', firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', address: '123 Main St', position: 'Manager', role: { name: 'Admin' }, username: 'johndoe' },
+//   { id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '234-567-8901', address: '456 Elm St', position: 'Developer', role: { name: 'User' }, username: 'janesmith' },
+//   { id: '3', firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@example.com', phone: '345-678-9012', address: '789 Pine St', position: 'Designer', role: { name: 'Editor' }, username: 'alicejohnson' },
+//   { id: '4', firstName: 'Bob', lastName: 'Brown', email: 'bob.brown@example.com', phone: '456-789-0123', address: '321 Oak St', position: 'Tester', role: { name: 'Moderator' }, username: 'bobbrown' },
+//   { id: '5', firstName: 'Charlie', lastName: 'Davis', email: 'charlie.davis@example.com', phone: '567-890-1234', address: '654 Cedar St', position: 'Support', role: { name: 'Viewer' }, username: 'charliedavis' },
+//   { id: '6', firstName: 'David', lastName: 'Wilson', email: 'david.wilson@example.com', phone: '678-901-2345', address: '987 Birch St', position: 'HR', role: { name: 'Contributor' }, username: 'davidwilson' },
+//   { id: '7', firstName: 'Ella', lastName: 'Martinez', email: 'ella.martinez@example.com', phone: '789-012-3456', address: '432 Spruce St', position: 'Analyst', role: { name: 'Manager' }, username: 'ellamartinez' },
+//   { id: '8', firstName: 'Frank', lastName: 'Garcia', email: 'frank.garcia@example.com', phone: '890-123-4567', address: '123 Willow St', position: 'Operator', role: { name: 'Operator' }, username: 'frankgarcia' },
+//   { id: '9', firstName: 'Grace', lastName: 'Lopez', email: 'grace.lopez@example.com', phone: '901-234-5678', address: '456 Maple St', position: 'Supervisor', role: { name: 'Supervisor' }, username: 'gracelopez' },
+//   { id: '10', firstName: 'Hank', lastName: 'Lee', email: 'hank.lee@example.com', phone: '012-345-6789', address: '789 Redwood St', position: 'Consultant', role: { name: 'Assistant' }, username: 'hanklee' },
+//   { id: '11', firstName: 'Ivy', lastName: 'King', email: 'ivy.king@example.com', phone: '123-456-7890', address: '321 Poplar St', position: 'Intern', role: { name: 'Analyst' }, username: 'ivyking' },
+//   { id: '12', firstName: 'Jack', lastName: 'Wright', email: 'jack.wright@example.com', phone: '234-567-8901', address: '654 Fir St', position: 'Engineer', role: { name: 'Consultant' }, username: 'jackwright' },
+//   { id: '13', firstName: 'Kate', lastName: 'Hill', email: 'kate.hill@example.com', phone: '345-678-9012', address: '987 Ash St', position: 'Sales', role: { name: 'Developer' }, username: 'katehill' },
+//   { id: '14', firstName: 'Liam', lastName: 'Scott', email: 'liam.scott@example.com', phone: '456-789-0123', address: '123 Maple St', position: 'Marketing', role: { name: 'Tester' }, username: 'liamscott' },
+//   { id: '15', firstName: 'Mia', lastName: 'Adams', email: 'mia.adams@example.com', phone: '567-890-1234', address: '456 Pine St', position: 'Customer Service', role: { name: 'Support' }, username: 'miaadams' },
+// ];
 
 export const SeeUsersPage = () => {
   const theme = useTheme();
@@ -67,42 +70,42 @@ export const SeeUsersPage = () => {
   ? [6, 15, 30]
   : [8, 20, 30]
 
-  // const {
-  //   data,
-  //   error: queryError,
-  //   loading: queryLoading,
-  // } = useQuery(GET_USERS);
-  // const [deleteUser, { loading: mutationLoading, error: mutationError }] =
-  //   useMutation(DELETE_USER, {
-  //     refetchQueries: [{ query: GET_USERS }],
-  //     onCompleted: () => {
-  //       console.log("Usuario eliminado correctamente");
-  //       setShowSuccessAlert(true);
-  //       // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
-  //       setTimeout(() => setShowSuccessAlert(false), 3000);
-  //     },
-  //   });
-
-  // const handleDeleteUser = (userId: string) => {
-  //   deleteUser({
-  //     variables: {
-  //       userId,
-  //     },
-  //   });
-  // };
-
-  // Simulamos la consulta de datos
-  const data = { users: usersData };
-  const queryLoading = false;
-  const queryError = null;
-  const mutationLoading = false;
-  const mutationError = null;
+  const {
+    data,
+    error: queryError,
+    loading: queryLoading,
+  } = useQuery(GET_USERS);
+  const [deleteUser, { loading: mutationLoading, error: mutationError }] =
+    useMutation(DELETE_USER, {
+      refetchQueries: [{ query: GET_USERS }],
+      onCompleted: () => {
+        console.log("Usuario eliminado correctamente");
+        setShowSuccessAlert(true);
+        // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
+        setTimeout(() => setShowSuccessAlert(false), 3000);
+      },
+    });
 
   const handleDeleteUser = (userId: string) => {
-    console.log(`Eliminar usuario con id: ${userId}`);
-    setShowSuccessAlert(true);
-    setTimeout(() => setShowSuccessAlert(false), 3000);
+    deleteUser({
+      variables: {
+        userId,
+      },
+    });
   };
+
+  // Simulamos la consulta de datos
+  // const data = { users: usersData };
+  // const queryLoading = false;
+  // const queryError = null;
+  // const mutationLoading = false;
+  // const mutationError = null;
+
+  // const handleDeleteUser = (userId: string) => {
+  //   console.log(`Eliminar usuario con id: ${userId}`);
+  //   setShowSuccessAlert(true);
+  //   setTimeout(() => setShowSuccessAlert(false), 3000);
+  // };
 
   const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null,  newPage: number) => {
     setPage(newPage);

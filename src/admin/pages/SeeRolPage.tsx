@@ -22,24 +22,6 @@ import { DELETE_ROLE } from "../../graphql/roles/mutations-roles";
 import { useEffect, useState } from "react";
 import { Role } from "../../interface/role.interface";
 
-// const rolesData = [
-//   { id: '1', name: 'Admin', description: 'Administrator role', permissions: ['READ', 'WRITE', 'DELETE'] },
-//   { id: '2', name: 'User', description: 'Regular user role', permissions: ['READ'] },
-//   { id: '3', name: 'Editor', description: 'Editor role', permissions: ['READ', 'WRITE'] },
-//   { id: '4', name: 'Moderator', description: 'Moderator role', permissions: ['READ', 'DELETE'] },
-//   { id: '5', name: 'Viewer', description: 'Viewer role', permissions: ['READ'] },
-//   { id: '6', name: 'Contributor', description: 'Contributor role', permissions: ['READ', 'WRITE'] },
-//   { id: '7', name: 'Manager', description: 'Manager role', permissions: ['READ', 'WRITE', 'DELETE'] },
-//   { id: '8', name: 'Operator', description: 'Operator role', permissions: ['READ', 'WRITE'] },
-//   { id: '9', name: 'Supervisor', description: 'Supervisor role', permissions: ['READ', 'WRITE', 'DELETE'] },
-//   { id: '10', name: 'Assistant', description: 'Assistant role', permissions: ['READ', 'WRITE'] },
-//   { id: '11', name: 'Analyst', description: 'Analyst role', permissions: ['READ', 'WRITE'] },
-//   { id: '12', name: 'Consultant', description: 'Consultant role', permissions: ['READ', 'WRITE'] },
-//   { id: '13', name: 'Developer', description: 'Developer role', permissions: ['READ', 'WRITE', 'DELETE'] },
-//   { id: '14', name: 'Tester', description: 'Tester role', permissions: ['READ', 'WRITE'] },
-//   { id: '15', name: 'Support', description: 'Support role', permissions: ['READ', 'WRITE'] },
-// ];
-
 export const SeeRolPage = () => {
   const theme = useTheme();
   const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -81,20 +63,6 @@ export const SeeRolPage = () => {
       },
     });
   };
-
-  // // Simulamos la consulta de datos
-  // const data = { roles: rolesData };
-  // const queryLoading = false;
-  // const queryError = null;
-  // const mutationLoading = false;
-  // const mutationError = null;
-
-  // const handleDelete = (roleId: string) => {
-  //   console.log(`Eliminar rol con id: ${roleId}`);
-  //   setShowSuccessAlert(true);
-  //   setTimeout(() => setShowSuccessAlert(false), 3000);
-  // };
-
   const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null,  newPage: number) => {
     setPage(newPage);
   };

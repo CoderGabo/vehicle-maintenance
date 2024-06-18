@@ -7,6 +7,7 @@ import {
   Box,
   Alert,
   Pagination,
+  CircularProgress,
 } from "@mui/material";
 import { ViagioLayout } from "../viagio/layout/ViagioLayout";
 import { Service } from "../interface/service.interface";
@@ -77,7 +78,7 @@ export const RegisterAppointmentPage = () => {
   const [page, setPage] = useState(1);
   // const [rowsPerPage, setRowsPerPage] = useState(3);
 
-  const { data: allAppointments } = useQuery(GET_APPOINTMENTS);
+  const { data: allAppointments, loading: isLoading } = useQuery(GET_APPOINTMENTS);
   const { data: appointmentsByCustomer } = useQuery(
     GET_APPOINTMENTS_BY_CUSTOMER,
     {
@@ -88,6 +89,8 @@ export const RegisterAppointmentPage = () => {
   const { data: pendingAppointments } = useQuery(GET_PENDING_APPOINTMENTS);
 
   console.log(pendingAppointments);
+  console.log(appointmentsByCustomer);
+  console.log(allAppointments);
 
   const [createMaintenance, { loading, error }] = useMutation(
     CREATE_MAINTENANCE,
@@ -155,7 +158,10 @@ export const RegisterAppointmentPage = () => {
       {showSuccessAlert && (
         <Alert severity="success">Cita Tomada exitosamente</Alert>
       )}
-      <Box sx={{ mt: 4, paddingLeft: 4 }}>
+      {isLoading ? (
+        <CircularProgress />
+      ) :( 
+        <Box sx={{ mt: 4, paddingLeft: 4 }}>
         {Array.isArray(appointmentsToDisplay) &&
           appointmentsToDisplay
           .slice((page - 1) * 3, page * 3)
@@ -213,6 +219,7 @@ export const RegisterAppointmentPage = () => {
             />
           </Box>
       </Box>
+      )}
     </ViagioLayout>
   );
 };

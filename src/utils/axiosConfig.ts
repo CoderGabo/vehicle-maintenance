@@ -6,7 +6,7 @@ export const instanceBussiness = axios.create({
 });
 
 export const instanceIA = axios.create({
-  baseURL: 'http://34.72.103.174/api/',
+  baseURL: 'http://35.188.39.83/api/',
   timeout: 5000, // Puedes ajustar el tiempo de espera según tus necesidades
 });
 

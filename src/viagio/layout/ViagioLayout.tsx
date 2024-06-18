@@ -107,6 +107,10 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
         navigate('/login');
     };
 
+    const handleButtonClick = (link: string) => {
+        navigate(link); // Navegar a la ruta especificada
+    };
+
     const renderMenuItems = (items: MenuItem[], parentOpen: boolean) => {
         return items.map((item, index) => {
             if (!permissions.includes(item.name)) {
@@ -144,9 +148,10 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
                             e.stopPropagation();
                             if (hasSubMenu) {
                                 handleSubMenuClick(index);
+                            }else{
+                                handleButtonClick(dynamicLink!)
                             }
                         }}
-                        {...(dynamicLink && { href: dynamicLink })} 
                     >
                         <ListItemIcon 
                             sx={{ 
