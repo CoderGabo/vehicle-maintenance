@@ -1,5 +1,0 @@
-[[redirects]]
-  from = "https://https://dancing-malabi-010d9f.netlify.app/"
-  to = "http://https://dancing-malabi-010d9f.netlify.app/:splat"
-  status = 301
-  force = true
