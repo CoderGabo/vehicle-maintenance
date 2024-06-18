@@ -56,6 +56,7 @@ export const LoginPage = () => {
       },
     });
   };
+  
   const navigateToCorrectRoute = () => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
   

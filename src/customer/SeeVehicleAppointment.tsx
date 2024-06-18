@@ -43,10 +43,11 @@ export const SeeVehicleAppointment = () => {
   const userId = user?.userId;
   console.log(userId);
 
-  const { data: vehiclesCustomer, loading: isLoading } = useQuery<{
+  const { data: vehiclesCustomer, loading: isLoading, refetch } = useQuery<{
     vehiclesByCustomer: VehicleFormData[];
   }>(GET_VEHICLES_BY_CUSTOMER, {
     variables: { customerId: userId },
+    fetchPolicy: "network-only",
   });
   // const result = useQuery(GET_VEHICLES_BY_CUSTOMER, {
   //   variables: { userId },
@@ -61,9 +62,11 @@ export const SeeVehicleAppointment = () => {
         {
           query: GET_APPOINTMENTS_BY_CUSTOMER,
           variables: { customerId: userId },
+          fetchPolicy: "network-only",
         },
       ],
       onCompleted: () => {
+        refetch();
         setOpen(false);
         setShowSuccessAlert(true);
         setTimeout(() => setShowSuccessAlert(false), 5000);

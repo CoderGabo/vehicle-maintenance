@@ -116,7 +116,7 @@ export const GET_APPOINTMENTS_BY_CUSTOMER_PAG = gql`
     $offset: Int
     $limit: Int
   ) {
-    appointmentsByCustomer(
+    appointmentsByCustomerPag(
       customerId: $customerId
       offset: $offset
       limit: $limit

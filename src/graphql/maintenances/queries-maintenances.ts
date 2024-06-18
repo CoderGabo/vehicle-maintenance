@@ -125,7 +125,7 @@ export const GET_MAINTENANCES_NOT_COMPLETED = gql`
 
 export const GET_MAINTENANCES_NOT_COMPLETED_PAG = gql`
   query GetMaintenancesNotCompletedPag($offset: Int, $limit: Int) {
-    maintenancesNotCompleted(offset: $offset, limit: $limit) {
+    maintenancesNotCompletedPag(offset: $offset, limit: $limit) {
       totalPages
       data {
         ... on Maintenance {

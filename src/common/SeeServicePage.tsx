@@ -49,10 +49,13 @@ export const SeeServicePage = () => {
     refetch,
   } = useQuery(GET_SERVICES_PAG, {
     variables: {
-      offset: page * rowsPerPage,
+      offset: page,
       limit: rowsPerPage,
     },
+    fetchPolicy: "network-only",
   });
+
+  console.log(data);
   const [deleteService, { loading: mutationLoading, error: mutationError }] =
     useMutation(DELETE_SERVICE, {
       // refetchQueries: [{ query: GET_SERVICES }],
@@ -65,7 +68,7 @@ export const SeeServicePage = () => {
       },
     });
 
-  console.log(data);
+  // console.log(data);
 
   const handleDeleteService = (serviceId: string) => {
     deleteService({
@@ -78,6 +81,7 @@ export const SeeServicePage = () => {
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
+    console.log(newPage);
     setPage(newPage);
   };
 
@@ -85,7 +89,6 @@ export const SeeServicePage = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    // setPage(0);
   };
 
   return (
@@ -98,7 +101,7 @@ export const SeeServicePage = () => {
         Servicios Registrados
       </Typography>
       {showSuccessAlert && (
-        <Alert severity="success">Rol eliminado correctamente</Alert>
+        <Alert severity="success">Servicio eliminado correctamente</Alert>
       )}
       {queryError && <Alert severity="error">{String(queryError)}</Alert>}
       {mutationError && <Alert severity="error">{String(mutationError)}</Alert>}

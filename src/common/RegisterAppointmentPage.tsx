@@ -38,39 +38,9 @@ interface User {
   role: Role;
 }
 
-// const appointments: Appointment[] = [
-//   {
-//     id: "1",
-//     scheduledDate: "2023-07-01T10:00:00",
-//     requestedServices: [
-//       { id: "101", name: "Oil Change" },
-//       { id: "102", name: "Tire Rotation" },
-//     ],
-//     vehicle: { id: "vehicle1", customerId: "66678d0d5970455f1e3a06f6" },
-//     status: "pending",
-//   },
-//   {
-//     id: "2",
-//     scheduledDate: "2023-07-02T13:00:00",
-//     requestedServices: [{ id: "103", name: "Brake Inspection" }],
-//     vehicle: { id: "vehicle2", customerId: "66678d0d5970455f1e3a05r6" },
-//     status: "in-progress",
-//   },
-//   {
-//     id: "3",
-//     scheduledDate: "2023-07-03T15:30:00",
-//     requestedServices: [
-//       { id: "104", name: "Wheel Alignment" },
-//       { id: "105", name: "Engine Diagnostic" },
-//     ],
-//     vehicle: { id: "vehicle3", customerId: "66678d0d5970455f1e3a06f6" },
-//     status: "completed",
-//   },
-// ];
-
-const customerId = "66678d0d5970455f1e3a06f6";
+// const customerId = "66678d0d5970455f1e3a06f6";
 // const vehicleId = "66699a79ecabca1e7aeb8177";
-const employeeId = "66678dd02a5da74b0ec59e57";
+// const employeeId = "66678dd02a5da74b0ec59e57";
 
 export const RegisterAppointmentPage = () => {
   const navigate = useNavigate();
@@ -79,24 +49,27 @@ export const RegisterAppointmentPage = () => {
 
   const [page, setPage] = useState(1);
   // const [rowsPerPage, setRowsPerPage] = useState(3);
+  const employeeId = user?.userId
 
   const { data: allAppointments, loading: isLoading } = useQuery(
     GET_APPOINTMENT_PAG,
     {
       variables: {
-        offset: (page - 1) * ROWS_PER_PAGE,
+        offset: (page - 1),
         limit: ROWS_PER_PAGE,
       },
+      fetchPolicy: "network-only",
     }
   );
   const { data: appointmentsByCustomer } = useQuery(
     GET_APPOINTMENTS_BY_CUSTOMER_PAG,
     {
       variables: {
-        customerId,
-        offset: (page - 1) * ROWS_PER_PAGE,
+        customerId: employeeId,
+        offset: (page - 1),
         limit: ROWS_PER_PAGE,
       },
+      fetchPolicy: "network-only",
     }
   );
 
@@ -104,9 +77,10 @@ export const RegisterAppointmentPage = () => {
     GET_PENDING_APPOINTMENTS_PAG,
     {
       variables: {
-        offset: (page - 1) * ROWS_PER_PAGE,
+        offset: (page - 1),
         limit: ROWS_PER_PAGE,
       },
+      fetchPolicy: "network-only",
     }
   );
 
@@ -147,6 +121,7 @@ export const RegisterAppointmentPage = () => {
 
   console.log("app to display" + getAppointmentsToDisplay());
   const handleTakeAppointment = (appointmentId: string, vehicleId: string) => {
+    console.log(appointmentId, vehicleId, employeeId!)
     createMaintenance({
       variables: {
         maintenanceDto: {

@@ -40,14 +40,13 @@ export const SeeRolPage = () => {
     data,
     error: queryError,
     loading: queryLoading,
-    fetchMore,
     refetch,
   } = useQuery(GET_ROLES_PAG, {
     variables: {
       offset: page,
       limit: rowsPerPage,
     },
-    notifyOnNetworkStatusChange: true, // Esto asegura que 'loading' se actualice con las llamadas 'fetchMore'
+    notifyOnNetworkStatusChange: true,
   });
   // Después de una mutación
   const [deleteUser, { loading: mutationLoading, error: mutationError }] =
@@ -75,13 +74,6 @@ export const SeeRolPage = () => {
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
-    const newOffset = newPage * rowsPerPage;
-    fetchMore({
-      variables: {
-        offset: newOffset,
-        limit: rowsPerPage,
-      },
-    });
     setPage(newPage);
   };
 
@@ -89,14 +81,7 @@ export const SeeRolPage = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
-    fetchMore({
-      variables: {
-        offset: 0, // Reinicia a la primera página
-        limit: newRowsPerPage,
-      },
-    });
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Vuelve a la primera página
   };
 
   return (

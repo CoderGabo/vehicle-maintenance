@@ -43,7 +43,7 @@ export const SeeVehiclesPage = () => {
     refetch,
   } = useQuery(GET_VEHICLES_PAG, {
     variables: {
-      offset: page * rowsPerPage,
+      offset: page,
       limit: rowsPerPage,
     },
   });
@@ -81,7 +81,6 @@ export const SeeVehiclesPage = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    //setPage(0);
   };
 
   return (

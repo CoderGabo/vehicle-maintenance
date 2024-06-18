@@ -75,7 +75,7 @@ export const SeeUsersPage = () => {
     refetch,
   } = useQuery(GET_USERS_PAG, {
     variables: {
-      offset: page * rowsPerPage,
+      offset: page,
       limit: rowsPerPage,
     },
   });
@@ -123,7 +123,6 @@ export const SeeUsersPage = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    // setPage(0);
   };
 
   return (

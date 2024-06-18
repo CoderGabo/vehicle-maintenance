@@ -20,6 +20,7 @@ export const SeeDetailMaintenance = () => {
   const { idCita } = useParams<{ idCita: string }>();
   const { data, error, loading } = useQuery(GET_MAINTENANCE_BY_APPOINTMENT, {
     variables: { appointmentId: idCita },
+    fetchPolicy: "network-only",
   });
 
   const maintenances = data?.maintenanceByAppointment;

@@ -40,17 +40,20 @@ export const SeeMaintenancePage = () => {
     error: queryError,
   } = useQuery(GET_MAINTENANCES_PAG, {
     variables: {
-      offset: (page - 1) * rowsPerPage,
+      offset: (page - 1),
       limit: rowsPerPage,
     },
+    fetchPolicy: "network-only",
   });
+  
   const { data: maintenancesNotCompleted } = useQuery(
     GET_MAINTENANCES_NOT_COMPLETED_PAG,
     {
       variables: {
-        offset: (page - 1) * rowsPerPage,
+        offset: (page - 1),
         limit: rowsPerPage,
       },
+      fetchPolicy: 'network-only',
     }
   );
 
@@ -111,13 +114,16 @@ export const SeeMaintenancePage = () => {
                 </ul>
                 <Typography>Estado: {maintenance.status}</Typography>
 
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleManageMaintenance(maintenance.id + "")}
-                >
-                  Gestionar Mantenimiento
-                </Button>
+                {maintenance.status !== 'completed' && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleManageMaintenance(maintenance.id + "")}
+                  >
+                    Gestionar Mantenimiento
+                  </Button>
+                )}
+                
               </Paper>
             ))}
           <Box mt={4} sx={{ display: "flex", justifyContent: "center" }}>

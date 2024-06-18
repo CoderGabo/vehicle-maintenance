@@ -84,7 +84,7 @@ export const RegisterUserPage = () => {
   return (
     <ViagioLayout>
       {showSuccessAlert && (
-        <Alert severity="success">Rol creado correctamente</Alert>
+        <Alert severity="success">Usuario creado correctamente</Alert>
       )}
       {error && <Alert severity="error">{String(error)}</Alert>}
 

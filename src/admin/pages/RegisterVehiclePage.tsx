@@ -40,6 +40,7 @@ export const RegisterVehiclePage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { data } = useQuery(GET_USERS);
+  // console.log(data.users);
 
   const years = Array.from({ length: 30 }, (_, i) =>
     String(new Date().getFullYear() - i)
