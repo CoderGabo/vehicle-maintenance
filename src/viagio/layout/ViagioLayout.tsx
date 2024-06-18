@@ -29,6 +29,7 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
     const theme = useTheme();
     const isLarge = useMediaQuery(theme.breakpoints.up('lg'));
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
 
     const toolBarHeight = isLarge ? 20 : 40;
 
@@ -50,6 +51,7 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
     useEffect(() => {
         // Simulación de obtención de datos de localStorage
         const userData: User = JSON.parse(localStorage.getItem("user")|| "{}");
+        setUser(userData);
 
         // Definición de permisos basados en el rol del usuario
         const userPermissions = getPermissions(userData.role.name);
@@ -115,6 +117,16 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
             const hasSubMenu = item.subMenu && item.subMenu.length > 0;
 
             const isActive = location.pathname === item.link;
+
+            // Lógica para ajustar dinámicamente el enlace de "Ver Vehículos"
+            let dynamicLink = item.link; // Por defecto, usar el enlace estático definido en menuItems
+            if (item.name === "Ver Vehículos") {
+                dynamicLink = permissions.includes("Ver Vehículos")
+                    ? (user?.role.name === "ADMINISTRADOR" ? "/vehiculos/ver" : `/vehiculos/ver/${user?.userId}`)
+                    : undefined;
+                
+            }
+
             return (
                 <div key={index}>
                     <ListItemButton
@@ -134,7 +146,7 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
                                 handleSubMenuClick(index);
                             }
                         }}
-                        {...(item.link && { href: item.link })} 
+                        {...(dynamicLink && { href: dynamicLink })} 
                     >
                         <ListItemIcon 
                             sx={{ 
@@ -178,7 +190,7 @@ export const ViagioLayout = ({children}: ViagioLayoutProps) => {
                     onClick={handleLogout}
                     sx={{
                         position: 'absolute',
-                        left: theme.spacing(25),
+                        left: theme.spacing(24.9),
                         color: 'orange',
                     }}
                 >

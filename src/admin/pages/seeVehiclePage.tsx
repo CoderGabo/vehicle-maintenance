@@ -9,18 +9,35 @@ import {
   IconButton,
   Alert,
   CircularProgress,
+  TablePagination,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import { ViagioLayout } from "../../viagio/layout/ViagioLayout";
 import { VehicleFormData } from "../../interface/vehicleFormData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { GET_VEHICLES } from "../../graphql/vehicles/queries-vehicles";
 import { DELETE_VEHICLE } from "../../graphql/vehicles/mutations-vehicles";
 
 export const SeeVehiclesPage = () => {
+  const theme = useTheme();
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(isMediumScreen ? 6 : 8);
+
+  const rowsPerPageOptions = isMediumScreen
+  ? [6, 15, 30]
+  : [8, 20, 30]
+
+  useEffect(() => {
+    setRowsPerPage(isMediumScreen ? 6 : 8);
+  }, [isMediumScreen]);
+
   const {
     data,
     error: queryError,
@@ -45,6 +62,15 @@ export const SeeVehiclesPage = () => {
         vehicleId,
       },
     });
+  };
+
+  const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -78,7 +104,9 @@ export const SeeVehiclesPage = () => {
             </TableHead>
             <TableBody>
               {data &&
-                data.vehicles.map((vehicle: VehicleFormData) => (
+                data.vehicles
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((vehicle: VehicleFormData) => (
                   <TableRow key={vehicle.id}>
                     <TableCell>{vehicle.brand}</TableCell>
                     <TableCell>{vehicle.model}</TableCell>
@@ -87,7 +115,7 @@ export const SeeVehiclesPage = () => {
                     <TableCell>{vehicle.year}</TableCell>
                     <TableCell>
                       <IconButton
-                        onClick={() => handleDeleteVehicle(vehicle.id + "")}
+                        onClick={() => handleDeleteVehicle(vehicle.id + '')}
                         color="secondary"
                       >
                         <DeleteIcon />
@@ -97,6 +125,16 @@ export const SeeVehiclesPage = () => {
                 ))}
             </TableBody>
           </Table>
+          <TablePagination
+            component="div"
+            count={data ? data.vehicles.length : 0}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={rowsPerPageOptions}
+            labelRowsPerPage="Filas por página"
+          />
         </Paper>
       )}
     </ViagioLayout>

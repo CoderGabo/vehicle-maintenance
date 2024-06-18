@@ -73,7 +73,7 @@ export const menuItems: MenuItem[] = [
       {
         name: "Ver Vehículos",
         icon: <VisibilityIcon />,
-        link: "/vehiculos/ver"
+        link: 'vehiculos/ver'
       }
     ]
   },

@@ -20,7 +20,9 @@ import { useNavigate } from "react-router-dom";
 //     id: "12345",
 //     username: "usuario_prueba",
 //     token: "mi_token_secreto",
-//     role: "admin"
+//     role: {
+//       name: 'EMPLOYEE'
+//     },
 //   }
 // };
 

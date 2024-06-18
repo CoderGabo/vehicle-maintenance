@@ -1,30 +1,24 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Button,
   Paper,
   Box,
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Alert,
+  Pagination,
 } from "@mui/material";
 import { ViagioLayout } from "../viagio/layout/ViagioLayout";
-import { DateTimePicker } from "./components/DateTimePicker";
-import { useNavigate } from "react-router-dom";
 import { Service } from "../interface/service.interface";
 import { useMutation, useQuery } from "@apollo/client";
-import { CREATE_APPOINTMENT } from "../graphql/appointments/mutations-appointments";
+
 import {
   GET_APPOINTMENTS,
   GET_APPOINTMENTS_BY_CUSTOMER,
   GET_PENDING_APPOINTMENTS,
 } from "../graphql/appointments/queries-appointments";
-import { GET_SERVICES } from "../graphql/services/queries-services";
 import { CREATE_MAINTENANCE } from "../graphql/maintenances/mutations-maintenances";
 import { VehicleFormData } from "../interface/vehicleFormData";
-import { GET_VEHICLES_BY_CUSTOMER } from "../graphql/vehicles/queries-vehicles";
 
 interface Appointment {
   id: string;
@@ -41,6 +35,35 @@ interface User {
   role: any;
 }
 
+// const appointments: Appointment[] = [
+//   {
+//     id: "1",
+//     scheduledDate: "2023-07-01T10:00:00",
+//     requestedServices: [
+//       { id: "101", name: "Oil Change" },
+//       { id: "102", name: "Tire Rotation" },
+//     ],
+//     vehicle: { id: "vehicle1", customerId: "66678d0d5970455f1e3a06f6" },
+//     status: "pending",
+//   },
+//   {
+//     id: "2",
+//     scheduledDate: "2023-07-02T13:00:00",
+//     requestedServices: [{ id: "103", name: "Brake Inspection" }],
+//     vehicle: { id: "vehicle2", customerId: "66678d0d5970455f1e3a05r6" },
+//     status: "in-progress",
+//   },
+//   {
+//     id: "3",
+//     scheduledDate: "2023-07-03T15:30:00",
+//     requestedServices: [
+//       { id: "104", name: "Wheel Alignment" },
+//       { id: "105", name: "Engine Diagnostic" },
+//     ],
+//     vehicle: { id: "vehicle3", customerId: "66678d0d5970455f1e3a06f6" },
+//     status: "completed",
+//   },
+// ];
 
 const customerId = "66678d0d5970455f1e3a06f6";
 // const vehicleId = "66699a79ecabca1e7aeb8177";
@@ -48,12 +71,12 @@ const employeeId = "66678dd02a5da74b0ec59e57";
 
 export const RegisterAppointmentPage = () => {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
-  const { data: ServicesData } = useQuery(GET_SERVICES);
+  const [page, setPage] = useState(1);
+  // const [rowsPerPage, setRowsPerPage] = useState(3);
+
   const { data: allAppointments } = useQuery(GET_APPOINTMENTS);
   const { data: appointmentsByCustomer } = useQuery(
     GET_APPOINTMENTS_BY_CUSTOMER,
@@ -62,25 +85,9 @@ export const RegisterAppointmentPage = () => {
     }
   );
 
-  const { data: vehiclesCustomer } = useQuery(GET_VEHICLES_BY_CUSTOMER, {
-    variables: { customerId },
-  });
-
   const { data: pendingAppointments } = useQuery(GET_PENDING_APPOINTMENTS);
 
   console.log(pendingAppointments);
-  const [createAppointment, { error: creationError }] = useMutation(
-    CREATE_APPOINTMENT,
-    {
-      refetchQueries: [
-        { query: GET_APPOINTMENTS_BY_CUSTOMER, variables: { customerId } },
-      ],
-      onCompleted: () => {
-        setOpen(false);
-        // Implementar lógica después de la creación exitosa
-      },
-    }
-  );
 
   const [createMaintenance, { loading, error }] = useMutation(
     CREATE_MAINTENANCE,
@@ -94,30 +101,6 @@ export const RegisterAppointmentPage = () => {
       },
     }
   );
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-  const handleAddAppointment = (
-    selectedDate: string,
-    selectedTime: string,
-    selectedServices: string[],
-    vehicleId: string
-  ) => {
-    const scheduledDate = `${selectedDate} ${selectedTime}`; // Concatenación de la fecha y la hora
-    createAppointment({
-      variables: {
-        appointmentDto: {
-          scheduledDate,
-          requestedServiceIds: selectedServices,
-          customerId,
-          vehicleId,
-        },
-      },
-    });
-  };
 
   // Asegurándonos de que getAppointmentsToDisplay retorna un array
   const getAppointmentsToDisplay = () => {
@@ -153,10 +136,6 @@ export const RegisterAppointmentPage = () => {
     navigate(`/mantenimiento/detalle/cliente/${id}`);
   };
 
-  if (creationError) {
-    setOpenDialog(true);
-  }
-
   useEffect(() => {
     // Simulación de obtención de datos de localStorage
     const userData: User = JSON.parse(localStorage.getItem("user")|| "{}");
@@ -166,49 +145,21 @@ export const RegisterAppointmentPage = () => {
 
   const appointmentsToDisplay = getAppointmentsToDisplay();
 
+  const handleChangePage = (_event: React.ChangeEvent<unknown> | null, value: number) => {
+    setPage(value);
+  };
+
   return (
     <ViagioLayout>
-      {user?.role.name === "CUSTOMER" && (
-        <Box mt={4} paddingLeft={4}>
-          <Button variant="contained" color="primary" onClick={handleOpen}>
-            Agendar Cita
-          </Button>
-        </Box>
-      )}
-      {creationError && (
-        <Dialog
-          open={openDialog}
-          onClose={handleCloseDialog}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              {String(creationError)}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button color="error" onClick={handleCloseDialog}>
-              Cerrar
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-
+      {error && <Alert severity="error">{String(error)}</Alert>}
       {showSuccessAlert && (
         <Alert severity="success">Cita Tomada exitosamente</Alert>
       )}
-      {error && <Alert severity="error">{String(error)}</Alert>}
-      <DateTimePicker
-        open={open}
-        onClose={handleClose}
-        onAddAppointment={handleAddAppointment}
-        availableServices={ServicesData?.services || []}
-        registeredVehicles={vehiclesCustomer?.vehiclesByCustomer || []}
-      />
       <Box sx={{ mt: 4, paddingLeft: 4 }}>
         {Array.isArray(appointmentsToDisplay) &&
-          appointmentsToDisplay.map((appointment: Appointment) => (
+          appointmentsToDisplay
+          .slice((page - 1) * 3, page * 3)
+          .map((appointment: Appointment) => (
             <Paper key={appointment.id} sx={{ p: 2, mt: 2 }}>
               <Typography variant="h6">
                 Fecha y Hora: {appointment.scheduledDate}
@@ -248,6 +199,19 @@ export const RegisterAppointmentPage = () => {
                 )}
             </Paper>
           ))}
+          <Box mt={4} sx={{ display: 'flex', justifyContent: 'right' }}>
+            <Pagination
+              count={Math.ceil(appointmentsToDisplay.length / 3)}
+              page={page}
+              onChange={handleChangePage}
+              color="secondary"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  color: '#616161',
+                }
+              }}
+            />
+          </Box>
       </Box>
     </ViagioLayout>
   );

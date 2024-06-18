@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const instanceBussiness = axios.create({
-  baseURL: 'http://localhost:8000/',
+  baseURL: 'https://bussinessint.azurewebsites.net/',
   timeout: 5000, // Puedes ajustar el tiempo de espera según tus necesidades
 });
 

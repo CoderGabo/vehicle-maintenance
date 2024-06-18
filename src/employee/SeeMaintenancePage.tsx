@@ -1,6 +1,7 @@
-import { Typography, Button, Paper, Box } from "@mui/material";
-import { ViagioLayout } from "../viagio/layout/ViagioLayout";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Typography, Button, Paper, Box, Pagination } from "@mui/material";
+import { ViagioLayout } from "../viagio/layout/ViagioLayout";
 import { useQuery } from "@apollo/client";
 import {
   GET_MAINTENANCES,
@@ -8,7 +9,6 @@ import {
 } from "../graphql/maintenances/queries-maintenances";
 
 import { Maintenance } from "../interface/maintenance.interface";
-import { useEffect, useState } from "react";
 
 interface User {
   userId: string;
@@ -20,6 +20,8 @@ export const SeeMaintenancePage = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
+  const [page, setPage] = useState(1); // Estado para la página actual
+  // const [rowsPerPage, setRowsPerPage] = useState(2);
 
   const { data: allMaintenances } = useQuery(GET_MAINTENANCES);
   const { data: maintenancesNotCompleted } = useQuery(
@@ -55,11 +57,20 @@ export const SeeMaintenancePage = () => {
     setUser(userData);
   }, []);
 
+  const handleChangePage = (
+    _event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+  };
+
   return (
     <ViagioLayout>
       <Box sx={{ mt: 4, paddingLeft: 4 }}>
         {maintenancesToDisplay &&
-          maintenancesToDisplay.map((maintenance: Maintenance) => (
+          maintenancesToDisplay
+          .slice((page - 1) * 2, page * 2)
+          .map((maintenance: Maintenance) => (
             <Paper key={maintenance.id} sx={{ p: 2, mt: 2 }}>
               <Typography variant="h6">
                 Vehículo: {maintenance.vehicle.licensePlate}
@@ -73,12 +84,22 @@ export const SeeMaintenancePage = () => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => handleManageMaintenance(maintenance.id + "")}
+                onClick={() =>
+                  handleManageMaintenance(maintenance.id + "")
+                }
               >
                 Gestionar Mantenimiento
               </Button>
             </Paper>
           ))}
+        <Box mt={4} sx={{ display: "flex", justifyContent: "center" }}>
+          <Pagination
+            count={Math.ceil(maintenancesToDisplay.length / 2)}
+            page={page}
+            onChange={handleChangePage}
+            color="primary"
+          />
+        </Box>
       </Box>
     </ViagioLayout>
   );

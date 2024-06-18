@@ -15,6 +15,7 @@ import { RegisterRolPage } from "../admin/pages/RegisterRolPage";
 import { SeeRolPage } from "../admin/pages/SeeRolPage";
 import { SeeDetailMaintenance } from "../customer/SeeDetailMaintenance";
 import { LoginPage } from "../admin/pages/LoginPage";
+import { SeeVehicleAppointment } from "../customer/SeeVehicleAppointment";
 
 interface UserData {
   userId: string;
@@ -69,6 +70,11 @@ export const AppRouter = () => {
           <Route
             path="/mantenimiento/detalle/cliente/:idCita"
             element={<SeeDetailMaintenance />}
+          />
+
+          <Route
+            path="/vehiculos/ver/:idcliente"
+            element={<SeeVehicleAppointment />}
           />
         </>
       )}
