@@ -19,7 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { ViagioLayout } from "../../viagio/layout/ViagioLayout";
 import { useEffect, useState } from "react";
 import { Role } from "../../interface/role.interface";
-import { GET_USERS } from "../../graphql/users/queries-users";
+import { GET_USERS_PAG } from "../../graphql/users/queries-users";
 import { DELETE_USER } from "../../graphql/users/mutations-users";
 import { useMutation, useQuery } from "@apollo/client";
 
@@ -56,7 +56,7 @@ interface UserData {
 
 export const SeeUsersPage = () => {
   const theme = useTheme();
-  const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [page, setPage] = useState(0);
@@ -66,20 +66,25 @@ export const SeeUsersPage = () => {
     setRowsPerPage(isMediumScreen ? 6 : 8);
   }, [isMediumScreen]);
 
-  const rowsPerPageOptions = isMediumScreen
-  ? [6, 15, 30]
-  : [8, 20, 30]
+  const rowsPerPageOptions = isMediumScreen ? [6, 15, 30] : [8, 20, 30];
 
   const {
     data,
     error: queryError,
     loading: queryLoading,
-  } = useQuery(GET_USERS);
+    refetch,
+  } = useQuery(GET_USERS_PAG, {
+    variables: {
+      offset: page * rowsPerPage,
+      limit: rowsPerPage,
+    },
+  });
   const [deleteUser, { loading: mutationLoading, error: mutationError }] =
     useMutation(DELETE_USER, {
-      refetchQueries: [{ query: GET_USERS }],
+      // refetchQueries: [{ query: GET_USERS }],
       onCompleted: () => {
         console.log("Usuario eliminado correctamente");
+        refetch();
         setShowSuccessAlert(true);
         // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
         setTimeout(() => setShowSuccessAlert(false), 3000);
@@ -107,13 +112,18 @@ export const SeeUsersPage = () => {
   //   setTimeout(() => setShowSuccessAlert(false), 3000);
   // };
 
-  const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null,  newPage: number) => {
+  const handleChangePage = (
+    _event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    // setPage(0);
   };
 
   return (
@@ -159,9 +169,7 @@ export const SeeUsersPage = () => {
               </TableHead>
               <TableBody>
                 {data &&
-                  data.users
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((user: UserData) => (
+                  data.usersPag.data.map((user: UserData) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.address}</TableCell>
                       <TableCell>{user.username}</TableCell>
@@ -189,7 +197,7 @@ export const SeeUsersPage = () => {
           </TableContainer>
           <TablePagination
             component="div"
-            count={data ? data.users.length : 0}
+            count={data ? data.usersPag.totalPages * rowsPerPage : 0}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}

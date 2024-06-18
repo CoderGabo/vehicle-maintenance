@@ -21,12 +21,13 @@ import { GET_SERVICES } from "../graphql/services/queries-services";
 import { GET_VEHICLES_BY_CUSTOMER } from "../graphql/vehicles/queries-vehicles";
 
 import { VehicleFormData } from "../interface/vehicleFormData";
+import { Role } from "../interface/role.interface";
 
 interface User {
   userId: string;
   username: string;
   token: string;
-  role: any;
+  role: Role;
 }
 
 export const SeeVehicleAppointment = () => {
@@ -34,26 +35,33 @@ export const SeeVehicleAppointment = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
+    null
+  );
 
   const { data: ServicesData } = useQuery(GET_SERVICES);
   const userId = user?.userId;
   console.log(userId);
 
-  const { data: vehiclesCustomer, loading: isLoading } = useQuery<{ vehiclesByCustomer: VehicleFormData[] }>(GET_VEHICLES_BY_CUSTOMER, {
-    variables: { userId },
+  const { data: vehiclesCustomer, loading: isLoading } = useQuery<{
+    vehiclesByCustomer: VehicleFormData[];
+  }>(GET_VEHICLES_BY_CUSTOMER, {
+    variables: { customerId: userId },
   });
-  const result =  useQuery(GET_VEHICLES_BY_CUSTOMER, {
-    variables: { userId },
-  });
-  console.log(result)
-  console.log(vehiclesCustomer)
+  // const result = useQuery(GET_VEHICLES_BY_CUSTOMER, {
+  //   variables: { userId },
+  // });
+  // console.log(result);
+  console.log(vehiclesCustomer);
 
   const [createAppointment, { error: creationError }] = useMutation(
     CREATE_APPOINTMENT,
     {
       refetchQueries: [
-        { query: GET_APPOINTMENTS_BY_CUSTOMER, variables: { userId } },
+        {
+          query: GET_APPOINTMENTS_BY_CUSTOMER,
+          variables: { customerId: userId },
+        },
       ],
       onCompleted: () => {
         setOpen(false);
@@ -76,7 +84,7 @@ export const SeeVehicleAppointment = () => {
   const handleAddAppointment = (
     selectedDate: string,
     selectedTime: string,
-    selectedServices: string[],
+    selectedServices: string[]
   ) => {
     const scheduledDate = `${selectedDate} ${selectedTime}`;
     createAppointment({
@@ -84,7 +92,7 @@ export const SeeVehicleAppointment = () => {
         appointmentDto: {
           scheduledDate,
           requestedServiceIds: selectedServices,
-          userId,
+          customerId: userId,
           vehicleId: selectedVehicleId,
         },
       },
@@ -100,19 +108,32 @@ export const SeeVehicleAppointment = () => {
     <ViagioLayout>
       {isLoading ? (
         <CircularProgress />
-      ) :(
+      ) : (
         <>
           <Box mt={4} paddingLeft={4}>
-          {vehiclesCustomer?.vehiclesByCustomer.map((vehicle) => (
-            <Paper key={vehicle.id} sx={{ p: 2, mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography>
-                {vehicle.year} {vehicle.brand} {vehicle.model}
-              </Typography>
-              <Button variant="contained" color="primary" onClick={() => handleOpen(vehicle.id!)}>
-                Agendar Cita
-              </Button>
-            </Paper>
-          ))} 
+            {vehiclesCustomer?.vehiclesByCustomer.map((vehicle) => (
+              <Paper
+                key={vehicle.id}
+                sx={{
+                  p: 2,
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography>
+                  {vehicle.year} {vehicle.brand} {vehicle.model}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpen(vehicle.id!)}
+                >
+                  Agendar Cita
+                </Button>
+              </Paper>
+            ))}
           </Box>
           <DateTimePicker
             open={open}

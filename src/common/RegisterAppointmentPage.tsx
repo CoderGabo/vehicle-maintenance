@@ -14,12 +14,14 @@ import { Service } from "../interface/service.interface";
 import { useMutation, useQuery } from "@apollo/client";
 
 import {
-  GET_APPOINTMENTS,
-  GET_APPOINTMENTS_BY_CUSTOMER,
-  GET_PENDING_APPOINTMENTS,
+  GET_APPOINTMENTS_BY_CUSTOMER_PAG,
+  GET_APPOINTMENT_PAG,
+  GET_PENDING_APPOINTMENTS_PAG,
 } from "../graphql/appointments/queries-appointments";
 import { CREATE_MAINTENANCE } from "../graphql/maintenances/mutations-maintenances";
 import { VehicleFormData } from "../interface/vehicleFormData";
+import { ROWS_PER_PAGE } from "../utils/constants";
+import { Role } from "../interface/role.interface";
 
 interface Appointment {
   id: string;
@@ -33,7 +35,7 @@ interface User {
   userId: string;
   username: string;
   token: string;
-  role: any;
+  role: Role;
 }
 
 // const appointments: Appointment[] = [
@@ -78,15 +80,35 @@ export const RegisterAppointmentPage = () => {
   const [page, setPage] = useState(1);
   // const [rowsPerPage, setRowsPerPage] = useState(3);
 
-  const { data: allAppointments, loading: isLoading } = useQuery(GET_APPOINTMENTS);
-  const { data: appointmentsByCustomer } = useQuery(
-    GET_APPOINTMENTS_BY_CUSTOMER,
+  const { data: allAppointments, loading: isLoading } = useQuery(
+    GET_APPOINTMENT_PAG,
     {
-      variables: { customerId },
+      variables: {
+        offset: (page - 1) * ROWS_PER_PAGE,
+        limit: ROWS_PER_PAGE,
+      },
+    }
+  );
+  const { data: appointmentsByCustomer } = useQuery(
+    GET_APPOINTMENTS_BY_CUSTOMER_PAG,
+    {
+      variables: {
+        customerId,
+        offset: (page - 1) * ROWS_PER_PAGE,
+        limit: ROWS_PER_PAGE,
+      },
     }
   );
 
-  const { data: pendingAppointments } = useQuery(GET_PENDING_APPOINTMENTS);
+  const { data: pendingAppointments, refetch } = useQuery(
+    GET_PENDING_APPOINTMENTS_PAG,
+    {
+      variables: {
+        offset: (page - 1) * ROWS_PER_PAGE,
+        limit: ROWS_PER_PAGE,
+      },
+    }
+  );
 
   console.log(pendingAppointments);
   console.log(appointmentsByCustomer);
@@ -95,8 +117,9 @@ export const RegisterAppointmentPage = () => {
   const [createMaintenance, { loading, error }] = useMutation(
     CREATE_MAINTENANCE,
     {
-      refetchQueries: [{ query: GET_PENDING_APPOINTMENTS }],
+      // refetchQueries: [{ query: GET_PENDING_APPOINTMENTS }],
       onCompleted: () => {
+        refetch();
         //console.log("Cita tomada exitosamente");
         setShowSuccessAlert(true);
         // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
@@ -110,13 +133,13 @@ export const RegisterAppointmentPage = () => {
     let appointments = [];
     switch (user?.role.name) {
       case "CUSTOMER":
-        appointments = appointmentsByCustomer?.appointmentsByCustomer || [];
+        appointments = appointmentsByCustomer?.appointmentsByCustomerPag || [];
         break;
       case "EMPLOYEE":
-        appointments = pendingAppointments?.pendingAppointments || [];
+        appointments = pendingAppointments?.pendingAppointmentsPag || [];
         break;
       default:
-        appointments = allAppointments?.appointments || [];
+        appointments = allAppointments?.appointmentsPag || [];
         break;
     }
     return appointments;
@@ -141,14 +164,17 @@ export const RegisterAppointmentPage = () => {
 
   useEffect(() => {
     // Simulación de obtención de datos de localStorage
-    const userData: User = JSON.parse(localStorage.getItem("user")|| "{}");
+    const userData: User = JSON.parse(localStorage.getItem("user") || "{}");
 
     setUser(userData);
   }, []);
 
   const appointmentsToDisplay = getAppointmentsToDisplay();
 
-  const handleChangePage = (_event: React.ChangeEvent<unknown> | null, value: number) => {
+  const handleChangePage = (
+    _event: React.ChangeEvent<unknown> | null,
+    value: number
+  ) => {
     setPage(value);
   };
 
@@ -160,65 +186,67 @@ export const RegisterAppointmentPage = () => {
       )}
       {isLoading ? (
         <CircularProgress />
-      ) :( 
+      ) : (
         <Box sx={{ mt: 4, paddingLeft: 4 }}>
-        {Array.isArray(appointmentsToDisplay) &&
-          appointmentsToDisplay
-          .slice((page - 1) * 3, page * 3)
-          .map((appointment: Appointment) => (
-            <Paper key={appointment.id} sx={{ p: 2, mt: 2 }}>
-              <Typography variant="h6">
-                Fecha y Hora: {appointment.scheduledDate}
-              </Typography>
-              <Typography>Servicios:</Typography>
-              <ul>
-                {appointment.requestedServices?.map((service) => (
-                  <li key={service.id}>{service.name}</li>
-                ))}
-              </ul>
-              <Typography>Estado: {appointment.status}</Typography>
-              {user?.role.name === "EMPLOYEE" &&
-                appointment.status === "pending" && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() =>
-                      handleTakeAppointment(
-                        appointment.id,
-                        appointment.vehicle.id + ""
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    {loading ? "Enviando..." : "Tomar Cita"}
-                  </Button>
-                )}
-              {user?.role.name === "CUSTOMER" &&
-                appointment.status === "completed" && (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleViewMaintenanceDetails(appointment.id)}
-                  >
-                    Ver Detalle de Mantenimiento
-                  </Button>
-                )}
-            </Paper>
-          ))}
-          <Box mt={4} sx={{ display: 'flex', justifyContent: 'right' }}>
+          {appointmentsToDisplay &&
+            appointmentsToDisplay.data?.map((appointment: Appointment) => (
+              <Paper key={appointment.id} sx={{ p: 2, mt: 2 }}>
+                <Typography variant="h6">
+                  Fecha y Hora: {appointment.scheduledDate}
+                </Typography>
+                <Typography>Servicios:</Typography>
+                <ul>
+                  {appointment.requestedServices?.map((service) => (
+                    <li key={service.id}>{service.name}</li>
+                  ))}
+                </ul>
+                <Typography>Estado: {appointment.status}</Typography>
+                {user?.role.name === "EMPLOYEE" &&
+                  appointment.status === "pending" && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() =>
+                        handleTakeAppointment(
+                          appointment.id,
+                          appointment.vehicle.id + ""
+                        )
+                      }
+                      disabled={loading}
+                    >
+                      {loading ? "Enviando..." : "Tomar Cita"}
+                    </Button>
+                  )}
+                {user?.role.name === "CUSTOMER" &&
+                  appointment.status === "completed" && (
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() =>
+                        handleViewMaintenanceDetails(appointment.id)
+                      }
+                    >
+                      Ver Detalle de Mantenimiento
+                    </Button>
+                  )}
+              </Paper>
+            ))}
+          <Box mt={4} sx={{ display: "flex", justifyContent: "right" }}>
             <Pagination
-              count={Math.ceil(appointmentsToDisplay.length / 3)}
+              count={
+                appointmentsToDisplay ? appointmentsToDisplay.totalPages : 0
+              }
               page={page}
               onChange={handleChangePage}
               color="secondary"
               sx={{
-                '& .MuiPaginationItem-root': {
-                  color: '#616161',
-                }
+                "& .MuiPaginationItem-root": {
+                  color: "#616161",
+                },
               }}
             />
           </Box>
-      </Box>
+        </Box>
       )}
     </ViagioLayout>
   );

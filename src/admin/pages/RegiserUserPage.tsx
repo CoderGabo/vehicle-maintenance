@@ -18,7 +18,7 @@ import { useMutation, useQuery } from "@apollo/client";
 import { GET_ROLES } from "../../graphql/roles/queries-roles";
 import { Role } from "../../interface/role.interface";
 import { REGISTER_USER } from "../../graphql/users/mutations-users";
-import { GET_USERS } from "../../graphql/users/queries-users";
+// import { GET_USERS } from "../../graphql/users/queries-users";
 
 // Definir una interfaz para los permisos
 // interface Rol {
@@ -53,7 +53,7 @@ export const RegisterUserPage = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   const [registerUser, { loading, error }] = useMutation(REGISTER_USER, {
-    refetchQueries: [{ query: GET_USERS }],
+    // refetchQueries: [{ query: GET_USERS }],
     onCompleted: () => {
       setShowSuccessAlert(true);
       setTimeout(() => setShowSuccessAlert(false), 3000);
@@ -80,7 +80,6 @@ export const RegisterUserPage = () => {
       },
     });
   };
-
 
   return (
     <ViagioLayout>
@@ -174,7 +173,7 @@ export const RegisterUserPage = () => {
                 ))}
             </Select>
           </FormControl>
-          {selectedRol && selectedRol.name !== 'customer' && (
+          {selectedRol && selectedRol.name !== "customer" && (
             <TextField
               label="Cargo"
               id="position"

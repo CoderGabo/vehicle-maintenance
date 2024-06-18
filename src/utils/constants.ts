@@ -3,3 +3,5 @@ export enum UserRole {
   Customer = "CUSTOMER",
   Employee = "EMPLOYEE",
 }
+
+export const ROWS_PER_PAGE = 4;

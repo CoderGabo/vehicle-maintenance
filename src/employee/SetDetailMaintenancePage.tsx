@@ -47,7 +47,11 @@ export const SetDetailMaintenancePage = () => {
   const { data: servicesData } = useQuery(GET_SERVICES);
   const services = useMemo(() => servicesData?.services || [], [servicesData]);
 
-  const { data: maintenanceData, error } = useQuery(GET_MAINTENANCE_BY_ID, {
+  const {
+    data: maintenanceData,
+    error,
+    loading,
+  } = useQuery(GET_MAINTENANCE_BY_ID, {
     variables: { id: idMantenimiento },
   });
 
@@ -61,7 +65,7 @@ export const SetDetailMaintenancePage = () => {
     () => maintenanceData?.maintenance || null,
     [maintenanceData]
   );
-  console.log(error);
+  console.log("error " + error);
   const [addDetails] = useMutation(ADD_DETAILS, {
     refetchQueries: [{ query: GET_MAINTENANCES_NOT_COMPLETED }],
   });
@@ -100,6 +104,7 @@ export const SetDetailMaintenancePage = () => {
     }
   };
 
+  // console.log(services);
   const handleOpenDialog = () => {
     setDialogOpen(true);
   };
@@ -147,9 +152,11 @@ export const SetDetailMaintenancePage = () => {
   };
 
   useEffect(() => {
-    if (maintenance && maintenance.details && services.length > 0) {
+    if (!loading && maintenance && maintenance.details && services.length > 0) {
+      let costs: { [key: string]: number } = {};
       const initialSelectedServices = maintenance.details.reduce(
         (acc: any, item: any) => {
+          console.log("item: " + item);
           const serviceFound = services.find(
             (service: any) => service.id === item.id
           );
@@ -158,21 +165,23 @@ export const SetDetailMaintenancePage = () => {
               id: item.id,
               description: serviceFound.name,
             };
+            costs = { ...costs, [item.id]: item.cost };
           }
           return acc;
         },
         {}
       );
       console.log("siiiii");
-      console.log(initialSelectedServices);
+      console.log("intial value " + initialSelectedServices);
       setSelectedServices(initialSelectedServices);
+      setServiceCosts(costs);
     } else {
       // Aquí puedes manejar el caso en que `maintenance.details` sea undefined o services aún no esté cargado
       console.log(
         "maintenance.details es undefined o services aún no está cargado"
       );
     }
-  }, [services, maintenance]);
+  }, [services, maintenance, loading]);
 
   if (!idMantenimiento) {
     return <Typography>No se encontraron detalles para esta cita.</Typography>;

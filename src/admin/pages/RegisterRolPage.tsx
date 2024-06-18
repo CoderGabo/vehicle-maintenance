@@ -9,10 +9,10 @@ import {
 import { RolFormData } from "../../interface/rolFormData";
 import { ViagioLayout } from "../../viagio/layout/ViagioLayout";
 import { CheckboxListWithSubMenu } from "../components/CheckboxListWithSubMenu";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { CREATE_ROLE } from "../../graphql/roles/mutations-roles";
-import { GET_ROLES } from "../../graphql/roles/queries-roles";
 import { useState } from "react";
+import { GET_ROLES_PAG } from "../../graphql/roles/queries-roles";
 
 export const RegisterRolPage = () => {
   const { handleSubmit, control } = useForm<RolFormData>({
@@ -30,11 +30,13 @@ export const RegisterRolPage = () => {
   });
 
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const { refetch } = useQuery(GET_ROLES_PAG);
 
   const [createRole, { loading, error }] = useMutation(CREATE_ROLE, {
-    refetchQueries: [{ query: GET_ROLES }],
+    // refetchQueries: [{ query: GET_ROLES }],
     onCompleted: () => {
       //console.log("Role creado correctamente");
+      refetch();
       setShowSuccessAlert(true);
       // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
       setTimeout(() => setShowSuccessAlert(false), 3000);

@@ -19,6 +19,46 @@ export const GET_MAINTENANCES = gql`
   }
 `;
 
+export const GET_MAINTENANCES_PAG = gql`
+  query GetMaintenancesPag($offset: Int, $limit: Int) {
+    maintenancesPag(offset: $offset, limit: $limit) {
+      totalPages
+      data {
+        ... on Maintenance {
+          id
+          date
+          status
+          details {
+            description
+            cost
+          }
+          employeeId
+          appointmentId
+          vehicleId
+          employee {
+            id
+            firstName
+            lastName
+            email
+          }
+          appointment {
+            id
+            requestedServices {
+              id
+              name
+              description
+            }
+          }
+          vehicle {
+            id
+            licensePlate
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_MAINTENANCE_BY_ID = gql`
   query GetMaintenanceById($id: ID!) {
     maintenance(id: $id) {
@@ -77,6 +117,46 @@ export const GET_MAINTENANCES_NOT_COMPLETED = gql`
       vehicle {
         id
         licensePlate
+      }
+    }
+  }
+`;
+
+export const GET_MAINTENANCES_NOT_COMPLETED_PAG = gql`
+  query GetMaintenancesNotCompletedPag($offset: Int, $limit: Int) {
+    maintenancesNotCompleted(offset: $offset, limit: $limit) {
+      totalPages
+      data {
+        ... on Maintenance {
+          id
+          date
+          status
+          details {
+            description
+            cost
+          }
+          employeeId
+          appointmentId
+          vehicleId
+          employee {
+            id
+            firstName
+            lastName
+            email
+          }
+          appointment {
+            id
+            requestedServices {
+              id
+              name
+              description
+            }
+          }
+          vehicle {
+            id
+            licensePlate
+          }
+        }
       }
     }
   }

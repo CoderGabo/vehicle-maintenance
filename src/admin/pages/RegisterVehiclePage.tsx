@@ -17,9 +17,9 @@ import { VehicleFormData } from "../../interface/vehicleFormData";
 import { useMutation, useQuery } from "@apollo/client";
 import { GET_USERS } from "../../graphql/users/queries-users";
 import { CREATE_VEHICLE } from "../../graphql/vehicles/mutations-vehicles";
-import { GET_VEHICLES } from "../../graphql/vehicles/queries-vehicles";
+// import { GET_VEHICLES } from "../../graphql/vehicles/queries-vehicles";
 // import {instanceIA} from "../../utils/axiosConfig"
-import { Role } from "../../interface/role.interface";;
+import { Role } from "../../interface/role.interface";
 
 interface UserData {
   id: string;
@@ -39,9 +39,7 @@ export const RegisterVehiclePage = () => {
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const {
-    data
-  } = useQuery(GET_USERS);
+  const { data } = useQuery(GET_USERS);
 
   const years = Array.from({ length: 30 }, (_, i) =>
     String(new Date().getFullYear() - i)
@@ -70,7 +68,7 @@ export const RegisterVehiclePage = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   const [createVehicle, { loading, error }] = useMutation(CREATE_VEHICLE, {
-    refetchQueries: [{ query: GET_VEHICLES }],
+    //refetchQueries: [{ query: GET_VEHICLES }],
     onCompleted: () => {
       //console.log("Vehicle creado correctamente");
       setShowSuccessAlert(true);
@@ -213,7 +211,7 @@ export const RegisterVehiclePage = () => {
               label="Usuario"
               sx={{ color: "#616161" }}
             >
-               {data &&
+              {data &&
                 data.users.map((user: UserData) => (
                   <MenuItem key={user.id} value={user.id}>
                     {user.firstName} {user.lastName}

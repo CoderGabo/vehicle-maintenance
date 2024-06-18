@@ -1,7 +1,7 @@
 import { TextField, Button, Box, Typography, Alert } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { ViagioLayout } from "../viagio/layout/ViagioLayout";
-import { GET_SERVICES } from "../graphql/services/queries-services";
+// import { GET_SERVICES } from "../graphql/services/queries-services";
 import { CREATE_SERVICE } from "../graphql/services/mutations-services";
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
@@ -21,7 +21,7 @@ export const RegisterServicePage = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   const [createService, { loading, error }] = useMutation(CREATE_SERVICE, {
-    refetchQueries: [{ query: GET_SERVICES }],
+    // refetchQueries: [{ query: GET_SERVICES }],
     onCompleted: () => {
       //console.log("servicio creado correctamente");
       setShowSuccessAlert(true);

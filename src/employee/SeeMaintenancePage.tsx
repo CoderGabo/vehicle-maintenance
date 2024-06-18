@@ -1,30 +1,57 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Typography, Button, Paper, Box, Pagination, Alert, CircularProgress } from "@mui/material";
+import {
+  Typography,
+  Button,
+  Paper,
+  Box,
+  Pagination,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
 import { ViagioLayout } from "../viagio/layout/ViagioLayout";
 import { useQuery } from "@apollo/client";
 import {
-  GET_MAINTENANCES,
-  GET_MAINTENANCES_NOT_COMPLETED,
+  GET_MAINTENANCES_NOT_COMPLETED_PAG,
+  GET_MAINTENANCES_PAG,
 } from "../graphql/maintenances/queries-maintenances";
 
 import { Maintenance } from "../interface/maintenance.interface";
+import { Role } from "../interface/role.interface";
 
 interface User {
   userId: string;
   username: string;
   token: string;
-  role: any;
+  role: Role;
 }
+
+const rowsPerPage = 4;
+
 export const SeeMaintenancePage = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
   const [page, setPage] = useState(1); // Estado para la página actual
 
-  const { data: allMaintenances, loading: isLoading, error: queryError } = useQuery(GET_MAINTENANCES);
+  const {
+    data: allMaintenances,
+    loading: isLoading,
+    error: queryError,
+  } = useQuery(GET_MAINTENANCES_PAG, {
+    variables: {
+      offset: (page - 1) * rowsPerPage,
+      limit: rowsPerPage,
+    },
+  });
   const { data: maintenancesNotCompleted } = useQuery(
-    GET_MAINTENANCES_NOT_COMPLETED
+    GET_MAINTENANCES_NOT_COMPLETED_PAG,
+    {
+      variables: {
+        offset: (page - 1) * rowsPerPage,
+        limit: rowsPerPage,
+      },
+    }
   );
 
   const handleManageMaintenance = (id: string) => {
@@ -36,20 +63,21 @@ export const SeeMaintenancePage = () => {
 
   const getMaintenancesToDisplay = () => {
     let maintenances = [];
-    if (user?.role.name === 'EMPLOYEE') {
-      maintenances = maintenancesNotCompleted?.maintenancesNotCompleted || [];
+    if (user?.role.name === "EMPLOYEE") {
+      maintenances =
+        maintenancesNotCompleted?.maintenancesNotCompletedPag || [];
     } else {
-      maintenances = allMaintenances?.maintenances || [];
+      maintenances = allMaintenances?.maintenancesPag || [];
     }
     return maintenances;
   };
 
   const maintenancesToDisplay = getMaintenancesToDisplay();
-  console.log(maintenancesNotCompleted)
-  
+  console.log(maintenancesToDisplay);
+
   useEffect(() => {
     // Simulación de obtención de datos de localStorage
-    const userData: User = JSON.parse(localStorage.getItem("user")|| "{}");
+    const userData: User = JSON.parse(localStorage.getItem("user") || "{}");
 
     setUser(userData);
   }, []);
@@ -58,6 +86,7 @@ export const SeeMaintenancePage = () => {
     _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
+    console.log(value);
     setPage(value);
   };
 
@@ -66,47 +95,47 @@ export const SeeMaintenancePage = () => {
       {queryError && <Alert severity="error">{String(queryError)}</Alert>}
       {isLoading ? (
         <CircularProgress />
-      ) :(
+      ) : (
         <Box sx={{ mt: 4, paddingLeft: 4 }}>
-        {maintenancesToDisplay &&
-          maintenancesToDisplay
-          .slice((page - 1) * 4, page * 4)
-          .map((maintenance: Maintenance) => (
-            <Paper key={maintenance.id} sx={{ p: 2, mt: 2 }}>
-              <Typography variant="h6">
-                Vehículo: {maintenance.vehicle.licensePlate}
-              </Typography>
-              <Typography>Servicios:</Typography>
-              <ul>
-                {maintenance.details?.map((detail, idx) => (
-                  <li key={idx}>{detail.description}</li>
-                ))}
-              </ul>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() =>
-                  handleManageMaintenance(maintenance.id + "")
-                }
-              >
-                Gestionar Mantenimiento
-              </Button>
-            </Paper>
-          ))}
-        <Box mt={4} sx={{ display: "flex", justifyContent: "center" }}>
-          <Pagination
-            count={Math.ceil(maintenancesToDisplay.length / 4)}
-            page={page}
-            onChange={handleChangePage}
-            color="secondary"
+          {maintenancesToDisplay &&
+            maintenancesToDisplay.data?.map((maintenance: Maintenance) => (
+              <Paper key={maintenance.id} sx={{ p: 2, mt: 2 }}>
+                <Typography variant="h6">
+                  Vehículo: {maintenance.vehicle.licensePlate}
+                </Typography>
+                <Typography>Servicios:</Typography>
+                <ul>
+                  {maintenance.details?.map((detail, idx) => (
+                    <li key={idx}>{detail.description}</li>
+                  ))}
+                </ul>
+                <Typography>Estado: {maintenance.status}</Typography>
+
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleManageMaintenance(maintenance.id + "")}
+                >
+                  Gestionar Mantenimiento
+                </Button>
+              </Paper>
+            ))}
+          <Box mt={4} sx={{ display: "flex", justifyContent: "center" }}>
+            <Pagination
+              count={
+                maintenancesToDisplay ? maintenancesToDisplay.totalPages : 0
+              }
+              page={page}
+              onChange={handleChangePage}
+              color="secondary"
               sx={{
-                '& .MuiPaginationItem-root': {
-                  color: '#616161',
-                }
-            }}
-          />
+                "& .MuiPaginationItem-root": {
+                  color: "#616161",
+                },
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
       )}
     </ViagioLayout>
   );

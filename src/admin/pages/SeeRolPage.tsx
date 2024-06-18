@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ViagioLayout } from "../../viagio/layout/ViagioLayout";
-import { GET_ROLES } from "../../graphql/roles/queries-roles";
+import { GET_ROLES, GET_ROLES_PAG } from "../../graphql/roles/queries-roles";
 import { useMutation, useQuery } from "@apollo/client";
 import { DELETE_ROLE } from "../../graphql/roles/mutations-roles";
 import { useEffect, useState } from "react";
@@ -24,15 +24,13 @@ import { Role } from "../../interface/role.interface";
 
 export const SeeRolPage = () => {
   const theme = useTheme();
-  const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(isMediumScreen ? 6 : 8);
 
-  const rowsPerPageOptions = isMediumScreen
-    ? [6, 15, 30]
-    : [8, 20, 30]
+  const rowsPerPageOptions = isMediumScreen ? [6, 15, 30] : [8, 20, 30];
 
   useEffect(() => {
     setRowsPerPage(isMediumScreen ? 6 : 8);
@@ -42,12 +40,22 @@ export const SeeRolPage = () => {
     data,
     error: queryError,
     loading: queryLoading,
-  } = useQuery(GET_ROLES);
+    fetchMore,
+    refetch,
+  } = useQuery(GET_ROLES_PAG, {
+    variables: {
+      offset: page,
+      limit: rowsPerPage,
+    },
+    notifyOnNetworkStatusChange: true, // Esto asegura que 'loading' se actualice con las llamadas 'fetchMore'
+  });
+  // Después de una mutación
   const [deleteUser, { loading: mutationLoading, error: mutationError }] =
     useMutation(DELETE_ROLE, {
       refetchQueries: [{ query: GET_ROLES }],
       onCompleted: () => {
         console.log("Role eliminado correctamente");
+        refetch();
         setShowSuccessAlert(true);
         // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
         setTimeout(() => setShowSuccessAlert(false), 3000);
@@ -63,15 +71,33 @@ export const SeeRolPage = () => {
       },
     });
   };
-  const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null,  newPage: number) => {
+  const handleChangePage = (
+    _event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    const newOffset = newPage * rowsPerPage;
+    fetchMore({
+      variables: {
+        offset: newOffset,
+        limit: rowsPerPage,
+      },
+    });
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    fetchMore({
+      variables: {
+        offset: 0, // Reinicia a la primera página
+        limit: newRowsPerPage,
+      },
+    });
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Vuelve a la primera página
   };
-
 
   return (
     <ViagioLayout>
@@ -106,9 +132,7 @@ export const SeeRolPage = () => {
               </TableHead>
               <TableBody>
                 {data &&
-                  data.roles
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((rol: Role) => (
+                  data.rolesPag.data.map((rol: Role) => (
                     <TableRow key={rol.id}>
                       <TableCell>{rol.name}</TableCell>
                       <TableCell>{rol.description}</TableCell>
@@ -128,7 +152,7 @@ export const SeeRolPage = () => {
           </TableContainer>
           <TablePagination
             component="div"
-            count={data ? data.roles.length : 0}
+            count={data ? data.rolesPag.totalPages * rowsPerPage : 0}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}

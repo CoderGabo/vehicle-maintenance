@@ -9,3 +9,18 @@ export const GET_SERVICES = gql`
     }
   }
 `;
+
+export const GET_SERVICES_PAG = gql`
+  query GetServicesPag($offset: Int, $limit: Int) {
+    servicesPag(offset: $offset, limit: $limit) {
+      totalPages
+      data {
+        ... on Servicio {
+          id
+          name
+          description
+        }
+      }
+    }
+  }
+`;

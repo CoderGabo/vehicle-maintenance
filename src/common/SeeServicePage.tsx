@@ -16,7 +16,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import { ViagioLayout } from "../viagio/layout/ViagioLayout";
-import { GET_SERVICES } from "../graphql/services/queries-services";
+import { GET_SERVICES_PAG } from "../graphql/services/queries-services";
 import { useMutation, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { DELETE_SERVICE } from "../graphql/services/mutations-services";
@@ -30,15 +30,13 @@ interface ServiceFormData {
 
 export const SeeServicePage = () => {
   const theme = useTheme();
-  const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(isMediumScreen ? 6 : 8);
 
-  const rowsPerPageOptions = isMediumScreen
-  ? [6, 15, 30]
-  : [8, 20, 30]
+  const rowsPerPageOptions = isMediumScreen ? [6, 15, 30] : [8, 20, 30];
 
   useEffect(() => {
     setRowsPerPage(isMediumScreen ? 6 : 8);
@@ -48,12 +46,19 @@ export const SeeServicePage = () => {
     data,
     error: queryError,
     loading: queryLoading,
-  } = useQuery(GET_SERVICES);
+    refetch,
+  } = useQuery(GET_SERVICES_PAG, {
+    variables: {
+      offset: page * rowsPerPage,
+      limit: rowsPerPage,
+    },
+  });
   const [deleteService, { loading: mutationLoading, error: mutationError }] =
     useMutation(DELETE_SERVICE, {
-      refetchQueries: [{ query: GET_SERVICES }],
+      // refetchQueries: [{ query: GET_SERVICES }],
       onCompleted: () => {
         //console.log("Service eliminado correctamente");
+        refetch();
         setShowSuccessAlert(true);
         // Opcionalmente, puedes reiniciar el mensaje de éxito después de unos segundos
         setTimeout(() => setShowSuccessAlert(false), 3000);
@@ -69,15 +74,19 @@ export const SeeServicePage = () => {
       },
     });
   };
-  const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null,  newPage: number) => {
+  const handleChangePage = (
+    _event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    // setPage(0);
   };
-
 
   return (
     <ViagioLayout>
@@ -107,27 +116,25 @@ export const SeeServicePage = () => {
             </TableHead>
             <TableBody>
               {data &&
-                data.services
-                  .slice(page * rowsPerPage, (page + 1) * rowsPerPage)
-                  .map((service: ServiceFormData) => (
-                    <TableRow key={service.id}>
-                      <TableCell>{service.name}</TableCell>
-                      <TableCell>{service.description}</TableCell>
-                      <TableCell>
-                        <IconButton
-                          onClick={() => handleDeleteService(service.id)}
-                          color="secondary"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                data.servicesPag.data.map((service: ServiceFormData) => (
+                  <TableRow key={service.id}>
+                    <TableCell>{service.name}</TableCell>
+                    <TableCell>{service.description}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        onClick={() => handleDeleteService(service.id)}
+                        color="secondary"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
           <TablePagination
             component="div"
-            count={data ? data.services.length : 0}
+            count={data ? data.servicesPag.totalPages * rowsPerPage : 0}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
