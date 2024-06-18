@@ -318,7 +318,10 @@ export const SetDetailMaintenancePage = () => {
                 variant="outlined"
                 fullWidth
                 multiline
-                value={maintenanceDescription}
+                defaultValue={
+                  maintenance.description ? maintenance.description : ""
+                }
+                // value={maintenanceDescription}
                 onChange={(e) => setMaintenanceDescription(e.target.value)}
                 sx={{ mt: 2, color: "#616161" }}
                 InputProps={{ style: { color: "#616161" } }}

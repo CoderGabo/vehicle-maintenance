@@ -63,6 +63,7 @@ export const GET_MAINTENANCE_BY_ID = gql`
   query GetMaintenanceById($id: ID!) {
     maintenance(id: $id) {
       id
+      description
       appointment {
         id
         requestedServices {
